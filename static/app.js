@@ -278,9 +278,9 @@ function choose(key) {
 function loadRoute() {
  const r = sel(), p = profile();
  const japanese = r.city === '东京';
- $('stationBoard').lang = japanese ? 'ja' : 'zh-CN';
- $('stationBoard').setAttribute('aria-label', japanese ? '車内案内' : '车厢下一站屏');
- $('boardStops').setAttribute('aria-label', japanese ? '停車駅' : '停靠站顺序');
+ $('stationBoard').setAttribute('aria-label', japanese ? '車内案内表示器' : '车内显示屏');
+ $('lcdKanaBox').hidden = !japanese; $('lcdZhBox').hidden = !japanese; $('lcdEn').disabled = !r.en;
+ lcdPhase = defaultPhase();
  $('readingsFold').hidden = !r.ja && !r.en && !has('number');
  clearPlaceResults();
  $('routeTitle').textContent = routeTitle(r);
@@ -330,7 +330,7 @@ function navButtons() {
  $('nextStation').disabled = p.idx >= total - 1;
 }
 function selectRow(i) {
- const p = profile(); if (i === p.idx) return; p.idx = i;
+ const p = profile(); if (i === p.idx) return; p.idx = i; lcdPhase = defaultPhase();
  clearPlaceResults();
  document.querySelectorAll('#stationTable tr.on').forEach(x => x.classList.remove('on'));
  $('stationTable').tBodies[0].rows[i]?.classList.add('on'); navButtons(); showStation(); invalidate(); persist();
@@ -455,37 +455,61 @@ for (const [id, key] of [['lineName', 'line'], ['terminal', 'terminal'], ['lineC
  });
 }
 $('next2Ja').oninput = $('next2En').oninput = invalidate;
+/* ---------- 车内动态显示屏 ---------- */
+const lcdScreen = LCD.create($('lcdFrame'));
+const lcdChannel = 'BroadcastChannel' in window ? new BroadcastChannel('station-sim-lcd') : null;
+const LCD_DEFAULTS = {state: 'auto', speed: 3, stops: 6, size: 100, kana: true, en: true, zh: true};
+let lcdPhase = 'next', lcdData = null;
+const lcdOpt = () => ({...LCD_DEFAULTS, ...(S.lcd || {})});
+/** 线路本身的录音是“即将到站”或“到站”广播时，默认显示对应状态 */
+function defaultPhase() { return {'即将到站': 'soon', '到站': 'at'}[sel().stationLabel] || 'next' }
+function setPhase(phase) { if (phase === lcdPhase) return; lcdPhase = phase; draw() }
 function draw() {
- const r = sel(), p = profile(), s = curRow(), f = fill(s), japanese = r.city === '东京';
- const stationName = (japanese ? f.jname : s.name).trim();
- $('boardLine').textContent = $('boardLineName').value.trim() || $('lineName').value.trim() || r.line || r.name;
- $('boardCode').textContent = $('lineCode').value || r.code;
- $('boardDirection').textContent = $('direction').value.trim();
+ const r = sel(), p = profile(), s = curRow(), f = fill(s), japanese = r.city === '东京', o = lcdOpt();
  const type = $('type1').value;
- $('boardType1').textContent = type;
- $('boardType1').dataset.mark = Object.hasOwn(serviceMarks, type) ? serviceMarks[type] : '';
- $('stationBoard').style.setProperty('--line-color', p.color || r.color);
- const stationLabel = r.stationLabel || '下一站';
- $('boardStationLabel').textContent = japanese ? '次は' : stationLabel;
- $('boardStationLabelEn').textContent = {'即将到站': 'Approaching', '到站': 'Arrived at'}[stationLabel] || 'Next stop';
- $('boardStationLabelEn').hidden = !r.en;
- $('boardStationName').textContent = stationName || '—';
- $('boardStationEn').textContent = f.en;
- $('boardStationEn').hidden = !r.en || !f.en || f.en.trim() === stationName;
- const number = (s.no || '').trim();
- $('boardStationNo').textContent = number;
- $('boardStationNo').hidden = !number || $('numberLabel').hidden;
- const start = Math.max(0, p.idx - 1);
- const stops = p.stations.slice(start, p.idx + 4).map((item, i) => {
-  const position = start + i;
-  const name = (japanese ? fill(item).jname : item.name).trim();
-  if (!name) return '';
-  const state = position < p.idx ? 'past' : position === p.idx ? 'current' : 'next';
-  return `<li class="${state}" ${state === 'current' ? 'aria-current="step"' : ''}><i aria-hidden="true"></i><span>${esc(name)}</span></li>`;
- }).filter(Boolean);
- $('boardStops').hidden = stops.length < 2;
- $('boardStops').innerHTML = stops.join('');
+ const nameOf = item => (japanese ? fill(item).jname || item.name : item.name).trim() || '—';
+ const count = +o.stops, start = Math.max(0, Math.min(p.idx - 1, p.stations.length - count));
+ const stops = p.stations.slice(start, start + count).map((item, i) => ({
+  name: nameOf(item), no: (item.no || '').trim(), state: start + i < p.idx ? 'past' : start + i === p.idx ? 'current' : 'next'}));
+ lcdData = {
+  city: japanese ? 'ja' : 'zh',
+  line: $('boardLineName').value.trim() || $('lineName').value.trim() || r.line || r.name,
+  code: $('lineCode').value || r.code, color: p.color || r.color,
+  type, mark: Object.hasOwn(serviceMarks, type) ? serviceMarks[type] : '',
+  dest: $('direction').value.trim(),
+  phase: o.state === 'auto' ? lcdPhase : o.state,
+  station: {zh: s.name.trim(), jname: japanese ? f.jname : '', kana: japanese ? f.ja : '', en: r.en ? f.en : '', no: $('numberLabel').hidden ? '' : (s.no || '').trim()},
+  stops,
+  transfer: {main: (s.tzh || '').trim() || (japanese ? (s.tja || '').trim() : ''), en: (s.ten || '').trim()},
+  door: s.sdoor || (s.door && s.door !== 'original' ? s.door : ''),
+  speed: +o.speed, langs: {kana: o.kana, en: o.en && !!r.en, zh: o.zh},
+ };
+ lcdScreen.update(lcdData);
+ lcdChannel?.postMessage(lcdData);
+ try { localStorage.setItem('station-sim-lcd', JSON.stringify(lcdData)) } catch (e) {}
+ for (const b of $('lcdStates').children) b.setAttribute('aria-pressed', b.dataset.s === o.state);
+ if (document.activeElement !== $('lcdTransfer')) $('lcdTransfer').value = s.tzh || '';
+ $('lcdDoor').value = s.sdoor || '';
 }
+if (lcdChannel) lcdChannel.onmessage = e => { if (e.data?.hello && lcdData) lcdChannel.postMessage(lcdData) };
+function lcdSettings() {
+ const o = lcdOpt();
+ $('lcdSpeed').value = o.speed; $('lcdStops').value = o.stops; $('lcdSize').value = o.size;
+ $('lcdKana').checked = o.kana; $('lcdEn').checked = o.en; $('lcdZh').checked = o.zh;
+ $('lcdSizeText').textContent = o.size + '%';
+ $('stationBoard').style.setProperty('--lcd-size', o.size + '%');
+}
+function setLcd(key, value) { S.lcd = {...lcdOpt(), [key]: value}; lcdSettings(); draw(); persist() }
+$('lcdStates').onclick = e => { const b = e.target.closest('[data-s]'); if (b) setLcd('state', b.dataset.s) };
+$('lcdSpeed').onchange = () => setLcd('speed', +$('lcdSpeed').value);
+$('lcdStops').onchange = () => setLcd('stops', +$('lcdStops').value);
+$('lcdSize').oninput = () => setLcd('size', +$('lcdSize').value);
+for (const [id, key] of [['lcdKana', 'kana'], ['lcdEn', 'en'], ['lcdZh', 'zh']]) $(id).onchange = () => setLcd(key, $(id).checked);
+$('lcdTransfer').oninput = () => { curRow().tzh = $('lcdTransfer').value; draw(); persist() };
+$('lcdDoor').onchange = () => { curRow().sdoor = $('lcdDoor').value; draw(); persist() };
+$('lcdFull').onclick = () => $('lcdFrame').requestFullscreen?.().catch(() => toast('浏览器不允许全屏'));
+$('lcdFrame').ondblclick = () => document.fullscreenElement ? document.exitFullscreen() : $('lcdFrame').requestFullscreen?.().catch(() => {});
+$('lcdWindow').onclick = () => { if (!window.open('/static/display.html', 'station-sim-lcd', 'width=1280,height=760')) toast('浏览器拦截了新窗口，请允许弹出窗口') };
 
 /* =====================================================================
    生成
@@ -573,8 +597,10 @@ async function startPlayback(title, focusControl = false) {
   setPlayer('idle'); toast('音频播放失败，请点试听重试');
  }
 }
-function play(url, title) { audio.src = url; startPlayback(title) }
-function stop() { playbackRevision++; audio.pause(); audio.currentTime = 0; setPlayer('idle') }
+// 播放报站录音时，显示屏（自动模式）切到「即将到站」，播完切到「到站」；发车音乐等其他声音不影响
+let playingReport = false;
+function play(url, title) { audio.src = url; playingReport = !url.startsWith('/static/sounds/'); if (playingReport) setPhase('soon'); startPlayback(title) }
+function stop() { playbackRevision++; audio.pause(); audio.currentTime = 0; setPlayer('idle'); if (playingReport) { playingReport = false; setPhase(defaultPhase()) } }
 $('pausePlay').onclick = () => {
  const hadFocus = document.activeElement === $('pausePlay');
  playbackRevision++; audio.pause(); setPlayer('paused');
@@ -582,7 +608,7 @@ $('pausePlay').onclick = () => {
 };
 $('resumePlay').onclick = () => startPlayback(undefined, document.activeElement === $('resumePlay'));
 $('stopPlay').onclick = stop;
-audio.addEventListener('ended', () => setPlayer('idle'));
+audio.addEventListener('ended', () => { setPlayer('idle'); if (playingReport) { playingReport = false; setPhase('at') } });
 
 /* ---------- 其他广播 ---------- */
 function mountSounds(group, selectId, buttonId) {
@@ -683,5 +709,6 @@ $('importDelete').onclick = async () => {
  if (!saved || !Object.keys(saved).length) { try { saved = JSON.parse(localStorage.getItem('station-sim-state') || 'null') } catch (e) {} }
  if (saved) S = {...S, ...saved, services: {...S.services, ...(saved.services || {})}};
  if (!presetOf(S.selected) && !baseRoute(S.selected)) S.selected = 'bus510';
+ lcdSettings();
  choose(S.selected);
 })();

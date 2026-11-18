@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>报站模拟器</title>
-<link rel="stylesheet" href="/static/style.css?v=4">
+<link rel="stylesheet" href="/static/style.css?v=5">
+<link rel="stylesheet" href="/static/lcd.css?v=1">
 </head>
 <body>
 <header class="topbar">
@@ -36,21 +37,20 @@
 
  <!-- ============ 中栏：显示牌 + 报站 ============ -->
  <section class="col main-col" id="workstation" aria-label="报站台">
-  <section class="station-board" id="stationBoard" aria-label="车厢下一站屏">
-   <header class="board-header">
-    <span id="boardCode" class="line-code"></span>
-    <strong id="boardLine"></strong>
-    <span class="service-type" id="boardType1"></span>
-    <span id="boardDirection" class="board-direction"></span>
-   </header>
-   <div class="board-next">
-    <div class="board-next-label"><span id="boardStationLabel">下一站</span><span id="boardStationLabelEn" lang="en">Next stop</span></div>
-    <div class="board-next-name">
-     <span id="boardStationNo" class="line-code" hidden></span>
-     <div class="board-station-text"><strong id="boardStationName"></strong><span id="boardStationEn" lang="en" hidden></span></div>
+  <section class="lcd-wrap" id="stationBoard" aria-label="车内显示屏">
+   <div id="lcdFrame"></div>
+   <div class="lcd-bar">
+    <div class="lcd-states" id="lcdStates" role="group" aria-label="显示屏状态">
+     <button type="button" data-s="auto" title="播放报站时显示「即将到站」，播完显示「到站」">自动</button>
+     <button type="button" data-s="next">下一站</button>
+     <button type="button" data-s="soon">即将到站</button>
+     <button type="button" data-s="at">到站</button>
+    </div>
+    <div class="lcd-tools">
+     <button type="button" class="ghost small" id="lcdFull">全屏</button>
+     <button type="button" class="ghost small" id="lcdWindow">单独窗口</button>
     </div>
    </div>
-   <ol class="board-stops" id="boardStops" aria-label="停靠站顺序" hidden></ol>
   </section>
 
   <div class="workbench">
@@ -156,6 +156,23 @@
     <label>显示牌另写名称<input id="boardLineName" maxlength="20" placeholder="不填则同线路名"></label>
    </div>
    <label class="full">方向<input id="direction" maxlength="30"></label>
+   <div class="lcd-settings">
+    <div class="grid2">
+     <label>轮播速度<select id="lcdSpeed"><option value="2">快（2 秒）</option><option value="3">标准（3 秒）</option><option value="4">慢（4 秒）</option><option value="6">很慢（6 秒）</option></select></label>
+     <label>路线图站数<select id="lcdStops"><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+    </div>
+    <label class="full">屏幕大小 <span id="lcdSizeText" class="count"></span><input id="lcdSize" type="range" min="40" max="100" step="5"></label>
+    <div class="field">站名轮播语言
+     <div class="lcd-langs">
+      <label class="check" id="lcdKanaBox"><input type="checkbox" id="lcdKana">假名读音</label>
+      <label class="check"><input type="checkbox" id="lcdEn">英文</label>
+      <label class="check" id="lcdZhBox"><input type="checkbox" id="lcdZh">中文</label>
+     </div>
+    </div>
+    <label class="full">本站换乘（显示屏）<input id="lcdTransfer" maxlength="80" placeholder="例如：可换乘 2 号线、10 号线"></label>
+    <label class="full">本站开门方向（显示屏）<select id="lcdDoor"><option value="">不显示</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
+    <p class="note">换乘和开门方向跟着当前站保存，只影响显示屏，不改录音。</p>
+   </div>
   </details>
 
    <details class="card tool-panel" id="importBox">
@@ -184,7 +201,8 @@
 </main>
 <audio id="audio" hidden></audio>
 <div class="toast" id="toast" role="status" hidden></div>
-<script src="/static/app.js?v=4"></script>
+<script src="/static/lcd.js?v=2"></script>
+<script src="/static/app.js?v=5"></script>
 <script src="/static/cloud.js?v=4"></script>
 </body>
 </html>

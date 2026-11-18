@@ -359,3 +359,20 @@ details > summary:hover { color: var(--accent); }
   .player .eq i, .progress .bar i { animation: none; }
 }
 
+
+/* 车内动态显示屏（画面样式在 lcd.css） */
+.lcd-wrap { --lcd-size: 100%; min-width: 0; width: var(--lcd-size); margin-inline: auto; display: grid; gap: 8px; }
+.lcd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.lcd-states { display: inline-flex; padding: 3px; gap: 2px; border-radius: 9px; background: var(--soft); border: 1px solid var(--line); }
+.lcd-states button { min-height: 30px; padding: 4px 11px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; }
+.lcd-states button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px #0002; }
+.lcd-tools { display: flex; gap: 6px; }
+.lcd-settings { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.lcd-settings input[type="range"] { width: 100%; accent-color: var(--accent); }
+.lcd-langs { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.lcd-langs label.check { margin-top: 6px; color: var(--ink); }
+@media (max-width: 720px) {
+  .lcd-wrap { width: 100%; }
+  .lcd-frame { border-radius: 7px; }
+  .lcd-states button { min-height: 36px; padding-inline: 9px; }
+}

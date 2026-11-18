@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>车内显示屏</title>
+<link rel="stylesheet" href="/static/lcd.css?v=1">
+<style>
+ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+ body { display: grid; }
+ #screen { width: 100vw; height: 100vh; aspect-ratio: auto; border-radius: 0; }
+ .hint {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 8px 14px; border-radius: 8px;
+  background: #000c; color: #fff; font: 14px "Microsoft YaHei UI", sans-serif; transition: opacity .4s; pointer-events: none;
+ }
+ .hint.off { opacity: 0; }
+ #full { position: fixed; right: 14px; top: 14px; padding: 8px 14px; border: 1px solid #fff6; border-radius: 8px; background: #000a; color: #fff; font: 14px "Microsoft YaHei UI", sans-serif; cursor: pointer; transition: opacity .4s; }
+ body.idle #full { opacity: 0; }
+</style>
+</head>
+<body>
+<div id="screen" aria-live="polite"></div>
+<button id="full" type="button">全屏</button>
+<p class="hint" id="hint">跟随报站模拟器主页面切换。双击画面全屏。</p>
+<script src="/static/lcd.js?v=2"></script>
+<script>
+'use strict';
+const lcd = LCD.create(document.getElementById('screen'));
+const show = data => { if (data && data.city) lcd.update(data) };
+try { show(JSON.parse(localStorage.getItem('station-sim-lcd') || 'null')) } catch (e) {}
+if ('BroadcastChannel' in window) {
+ const channel = new BroadcastChannel('station-sim-lcd');
+ channel.onmessage = e => show(e.data);
+ channel.postMessage({hello: true});
+}
+// 浏览器不支持 BroadcastChannel 时，靠 localStorage 变化同步
+addEventListener('storage', e => { if (e.key === 'station-sim-lcd') try { show(JSON.parse(e.newValue)) } catch (_) {} });
+const toggle = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {});
+document.getElementById('full').onclick = toggle;
+document.getElementById('screen').ondblclick = toggle;
+setTimeout(() => document.getElementById('hint').classList.add('off'), 4000);
+let idle;
+const wake = () => { document.body.classList.remove('idle'); clearTimeout(idle); idle = setTimeout(() => document.body.classList.add('idle'), 2500) };
+addEventListener('mousemove', wake); wake();
+</script>
+</body>
+</html>
