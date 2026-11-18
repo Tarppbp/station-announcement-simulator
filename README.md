@@ -38,6 +38,14 @@ python -m venv .venv
 
 公开仓库提供程序和线路显示模板。第三方录音、模型权重及个人设置由使用者留在本机。请使用有权使用和处理的录音。
 
+### JR 全线原声（可选）
+
+如已在本机配置可使用的 [pids-jre-simulator](https://github.com/ksleungac/pids-jre-simulator) 素材，填写 `local-config.json` 中的 `jre_dir`，指向包含 `audio` 和 `data` 的目录。重启后从「JR 全线原声」选择车次。站点表按运行图显示，通过站标灰，播放可手动推进或连续运行。车厢屏会显示车种颜色、车站编号和双语换乘信息。
+
+- **录音不在本仓库里**。录音来自 [pids-jre-simulator](https://github.com/ksleungac/pids-jre-simulator) 的 `audio/` 文件夹，由铁道爱好者录制，著作权属于 JR 东日本等权利人，原项目不允许再分发。请自行下载该项目（例如 `git clone --depth 1 https://github.com/ksleungac/pids-jre-simulator.git`，约 800 MB），再把 `jre_dir` 指向它。程序只在本机读取，不复制、不上传。
+- **线路标志在本仓库的 `static/line_icons/`**：原图来自 Wikimedia Commons，其中 34 个属于公有领域，3 个为 CC BY-SA 4.0。来源、作者和授权逐个列在 [THIRD-PARTY.md](THIRD-PARTY.md)。这些标志是各铁路公司的商标，本项目与它们无关。
+- 运行图数据（站点、广播顺序）同样在运行时从本机的 pids-jre-simulator 读取。
+
 ### 语音配置
 
 把 `local-config.example.json` 复制为 `local-config.json`，填写需要的项目。

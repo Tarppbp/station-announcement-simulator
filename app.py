@@ -15,8 +15,25 @@ import numpy as np
 import soundfile as sf
 
 app = FastAPI()
+
+@app.middleware('http')
+async def no_stale_pages(request, call_next):
+    # 网页文件每次都向服务确认是否有更新，改了 static/ 下的文件刷新就能看到
+    response = await call_next(request)
+    if request.url.path == '/' or request.url.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'no-cache'
+    return response
+
 app.mount('/data', StaticFiles(directory=DATA), name='data')
 app.mount('/static', StaticFiles(directory=ROOT/'static'), name='static')
+# 本机的 pids-jre-simulator（JR 全线原声）：只读取，不复制。位置见 local-config.json 的 jre_dir
+import jre_routes
+JRE_DIR = local_path('jre_dir')
+if JRE_DIR and (JRE_DIR/'audio').is_dir() and (JRE_DIR/'data'/'line_icons').is_dir():
+    app.mount('/jre/audio', StaticFiles(directory=JRE_DIR/'audio'), name='jre-audio')
+    app.mount('/jre/icons', StaticFiles(directory=JRE_DIR/'data'/'line_icons'), name='jre-icons')
+else:
+    JRE_DIR = None
 TTS_DIR = local_path('tts_dir')
 SR = 24000
 FIELDS = ('station', 'line', 'terminal', 'transfer', 'number', 'next2', 'door')
@@ -365,6 +382,13 @@ def options():
         'melodies': [name for name in ('JRE-IKST-025-01.mp3', 'JRE-IKST-025-02.mp3', 'JR-SH1-1_old.mp3') if (sounds/name).is_file()],
         'notices': [name for name in ('bus-turn.mp3', 'bus-seat.mp3', 'bus-safety.mp3') if (sounds/name).is_file()],
     }
+
+
+@app.get('/api/jre/routes')
+def jre_list():
+    if not JRE_DIR: return []
+    try: return jre_routes.load(JRE_DIR)
+    except Exception as e: raise HTTPException(500, f'读取 JR 运行图失败：{e}')
 
 
 @app.get('/api/cloud/status')

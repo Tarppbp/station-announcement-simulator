@@ -6,6 +6,30 @@ const LCD = (() => {
  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
+ function kindStyle(color) {
+  if (!/^#[0-9a-f]{6}$/i.test(color || '')) return null;
+  const [r, g, b] = color.slice(1).match(/../g).map(hex => {
+   const value = parseInt(hex, 16) / 255;
+   return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+  });
+  return {background: color, ink: (.2126 * r + .7152 * g + .0722 * b) > .179 ? '#000' : '#fff'};
+ }
+
+ function stationBadge(station) {
+  const no = String(station?.no || '').trim(), code3 = String(station?.code3 || '').trim();
+  const split = /^([A-Z]{1,4})\s*(\d{1,3})$/i.exec(no);
+  const parts = split ? split.slice(1) : no ? [no] : [];
+  return (code3 ? `<span class="lcd-code3">${esc(code3)}</span>` : '') +
+   parts.map(part => `<span>${esc(part)}</span>`).join('');
+ }
+
+ function iconMarkup(badge) {
+  const icon = String(badge?.icon || ''), code = String(badge?.code || '').trim();
+  const fallback = code ? `<span class="lcd-transfer-code">${esc(code)}</span>` : '';
+  return /^\/jre\/icons\/[a-z0-9_.%+-]+\.png$/i.test(icon)
+   ? `<img src="${esc(icon)}" alt="${esc(code)}">` : fallback;
+ }
+
  // 各语言的状态文字。key：next 下一站 / soon 即将到站 / at 到站
  const LABEL = {
   ja: {next: '次は', soon: 'まもなく', at: 'ただいま'},
@@ -38,7 +62,7 @@ const LCD = (() => {
  /** 下半屏轮播页：路线图、换乘、开门方向 */
  function pages(d) {
   const list = ['route'];
-  if ((d.transfer?.main || d.transfer?.en || '').trim()) list.push('transfer');
+  if (d.transfer?.list?.length || (d.transfer?.main || d.transfer?.en || '').trim()) list.push('transfer');
   if (d.door === 'left' || d.door === 'right') list.push('door');
   return list;
  }
@@ -102,15 +126,23 @@ const LCD = (() => {
    const past = cur > 0 ? `<i class="lcd-track past" style="left:${x(0)}%;width:${Math.max(0, pos - x(0))}%"></i>` : '';
    return `<div class="lcd-route ${d.phase}" style="--n:${n}">
     <i class="lcd-track" style="left:${x(0)}%;width:${x(stops.length - 1) - x(0)}%"></i>${past}
-    ${stops.map((s, i) => `<div class="lcd-stop ${s.state}" style="left:${x(i)}%;width:${100 / n}%">
+    ${stops.map((s, i) => `<div class="lcd-stop ${s.state}${s.pass ? ' pass' : ''}" style="left:${x(i)}%;width:${100 / n}%">
       <span class="lcd-stop-name" lang="${d.city === 'ja' ? 'ja' : 'zh-CN'}"><span>${esc(s.name)}</span></span>
-      <i class="lcd-dot"></i><span class="lcd-stop-no">${esc(s.no)}</span></div>`).join('')}
+      <i class="lcd-dot"></i><span class="lcd-stop-no">${esc(s.no || (s.pass ? (d.city === 'ja' ? '通過' : '通过') : ''))}</span></div>`).join('')}
     <span class="lcd-train ${d.phase}" style="left:${pos}%" aria-hidden="true"><i></i><i></i><i></i></span>
    </div>`;
   }
   function drawTransfer(d) {
    const ja = d.city === 'ja';
-   return `<div class="lcd-page lcd-transfer"><div class="lcd-page-title"><b>${ja ? '乗換えのご案内' : '换乘信息'}</b><span lang="en">Transfer</span></div>
+   const entries = d.transfer.list?.slice(0, 8);
+   const title = `<div class="lcd-page-title"><b>${ja ? '乗換えのご案内' : '换乘信息'}</b><span lang="en">Transfer</span></div>`;
+   if (entries?.length) {
+    return `<div class="lcd-page lcd-transfer lcd-transfer-list">${title}<ul>${entries.map(line => `<li>
+     <div class="lcd-transfer-badges">${(line.badges || []).slice(0, 3).map(iconMarkup).join('')}</div>
+     <div class="lcd-transfer-name"><b lang="ja">${esc(line.ja)}</b><span lang="en">${esc(line.en)}</span></div>
+    </li>`).join('')}</ul></div>`;
+   }
+   return `<div class="lcd-page lcd-transfer">${title}
     <div class="lcd-page-body"><p lang="${ja ? 'ja' : 'zh-CN'}">${esc(d.transfer.main)}</p>${d.transfer.en ? `<p class="en" lang="en">${esc(d.transfer.en)}</p>` : ''}</div></div>`;
   }
   function drawDoor(d) {
@@ -156,9 +188,12 @@ const LCD = (() => {
    el.code.textContent = d.code || ''; el.code.hidden = !d.code;
    el.line.textContent = d.line || '';
    el.type.textContent = d.type || ''; el.type.dataset.mark = d.mark || ''; el.type.hidden = !d.type;
+   const palette = kindStyle(d.typeColor);
+   el.type.style.setProperty('--type-color', palette?.background || '');
+   el.type.style.setProperty('--type-ink', palette?.ink || '');
    el.dest.textContent = d.dest || '';
-   const no = String(d.station?.no || '').trim();
-   el.no.textContent = no.replace(/\s+/, '\n'); el.no.hidden = !no;
+   const badge = stationBadge(d.station);
+   el.no.innerHTML = badge; el.no.hidden = !badge;
    // 换了站、状态或轮播内容时从第一种语言重新开始
    const key = d => d && JSON.stringify([d.station, d.phase, d.langs, d.door, d.transfer]);
    if (key(old) !== key(d)) { tick = 0; lastName = ''; restart() }

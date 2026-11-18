@@ -9,6 +9,8 @@
   font-family: "Hiragino Sans", "Yu Gothic UI", "Microsoft YaHei UI", "PingFang SC", Meiryo, sans-serif;
 }
 .lcd [lang="en"] { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+.lcd, .lcd * { box-sizing: border-box; }
+.lcd [hidden] { display: none; }
 
 /* 顶部：线路、种别、方向、时间 */
 .lcd-head { display: flex; align-items: center; gap: 18px; padding: 0 34px; background: #23262d; white-space: nowrap; min-width: 0; }
@@ -17,11 +19,15 @@
   border-radius: 10px; background: #fff; color: #111; font: 800 34px/1 "Segoe UI", Arial, sans-serif;
 }
 .lcd-line { font-size: 40px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
-.lcd-type { padding: 6px 16px; border: 3px solid #fff; border-radius: 8px; font-size: 32px; font-weight: 800; }
-.lcd-type[data-mark="rapid"] { background: #e8730c; border-color: #e8730c; }
-.lcd-type[data-mark="express"] { background: #d7102a; border-color: #d7102a; }
-.lcd-type[data-mark="chuo"] { background: #1f5fb5; border-color: #1f5fb5; }
-.lcd-type[data-mark="ome"] { background: #1d8a4f; border-color: #1d8a4f; }
+.lcd-type {
+  padding: 6px 16px; border: 3px solid var(--type-color, var(--kind-color, #fff)); border-radius: 8px;
+  background: var(--type-color, var(--kind-color, transparent)); color: var(--type-ink, #fff);
+  font-size: 32px; font-weight: 800;
+}
+.lcd-type[data-mark="rapid"] { --kind-color: #ad5005; }
+.lcd-type[data-mark="express"] { --kind-color: #d7102a; }
+.lcd-type[data-mark="chuo"] { --kind-color: #1f5fb5; }
+.lcd-type[data-mark="ome"] { --kind-color: #197742; }
 .lcd-dest { margin-left: auto; font-size: 34px; font-weight: 700; color: #e9ebf0; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .lcd-clock { font: 700 38px/1 "Segoe UI", Arial, sans-serif; font-variant-numeric: tabular-nums; color: #fff; padding-left: 22px; border-left: 2px solid #4a4e58; }
 .lcd-stripe { background: var(--line-color); }
@@ -33,9 +39,12 @@
 .lcd-label[data-lang="en"] span { font-size: 44px; }
 .lcd-name { display: flex; align-items: center; gap: 28px; min-width: 0; }
 .lcd-no {
-  flex: none; display: grid; place-items: center; width: 118px; height: 118px; border: 9px solid var(--line-color); border-radius: 14px;
-  background: #fff; color: #111; font: 800 34px/1.05 "Segoe UI", Arial, sans-serif; text-align: center; white-space: pre-line; padding: 4px;
+  flex: none; display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+  min-width: 118px; min-height: 118px; max-width: 186px; border: 9px solid var(--line-color); border-radius: 14px;
+  background: #fff; color: #111; font: 800 34px/1.07 "Segoe UI", Arial, sans-serif; text-align: center; padding: 5px 7px;
+  overflow-wrap: anywhere;
 }
+.lcd-code3 { align-self: center; padding: 2px 8px 3px; margin-bottom: 3px; background: #21242b; color: #fff; border-radius: 3px; font-size: 23px; }
 .lcd-name-box { flex: 1; min-width: 0; overflow: hidden; }
 .lcd-name-text { display: inline-block; white-space: nowrap; font-weight: 800; line-height: 1.15; transform-origin: left center; letter-spacing: .02em; }
 .lcd-name-box[data-lang="en"] .lcd-name-text { font-weight: 700; letter-spacing: 0; }
@@ -54,6 +63,8 @@
 .lcd-stop.past .lcd-dot { border-color: #a2a6ae; }
 .lcd-stop.current .lcd-stop-name > span { font-size: 36px; color: #000; }
 .lcd-stop.current .lcd-dot { width: 52px; height: 52px; background: var(--line-color); border-color: #111; }
+.lcd-stop.pass .lcd-stop-name > span, .lcd-stop.pass .lcd-stop-no { color: #60646d; }
+.lcd-stop.pass .lcd-dot { width: 19px; height: 19px; border: 3px solid #737780; background: #afb3ba; animation: none; }
 .lcd-train { position: absolute; z-index: 3; top: 196px; transform: translate(-50%, -50%); display: flex; gap: 2px; }
 .lcd-train i { width: 0; height: 0; border-block: 17px solid transparent; border-left: 22px solid #d7102a; animation: lcd-chevron 1.2s infinite; }
 .lcd-train i:nth-child(2) { animation-delay: .2s; }
@@ -70,6 +81,19 @@
 .lcd-page-body { min-width: 0; display: grid; gap: 14px; }
 .lcd-page-body p { margin: 0; font-size: 44px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .lcd-page-body p.en { font-size: 30px; font-weight: 600; color: #333; -webkit-line-clamp: 2; }
+.lcd-transfer-list { display: grid; grid-template-rows: auto 1fr; align-items: start; gap: 7px; padding: 12px 34px; }
+.lcd-transfer-list .lcd-page-title { display: flex; align-items: baseline; gap: 12px; justify-self: start; padding: 4px 13px; border-radius: 5px; }
+.lcd-transfer-list .lcd-page-title b { font-size: 28px; }
+.lcd-transfer-list .lcd-page-title span { font-size: 18px; }
+.lcd-transfer-list ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 17px; list-style: none; margin: 0; padding: 0; }
+.lcd-transfer-list li { display: flex; align-items: center; gap: 10px; height: 52px; padding: 3px 10px; background: #fff; border: 1px solid #d4d6db; border-radius: 5px; min-width: 0; }
+.lcd-transfer-badges { display: flex; flex: none; align-items: center; gap: 4px; }
+.lcd-transfer-badges img, .lcd-transfer-code { width: 39px; height: 39px; object-fit: contain; }
+.lcd-transfer-code { display: grid; place-items: center; background: #e9eaed; border-radius: 4px; font: 800 17px/1 "Segoe UI", sans-serif; }
+.lcd-transfer-name { display: grid; min-width: 0; line-height: 1.12; gap: 3px; }
+.lcd-transfer-name b, .lcd-transfer-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcd-transfer-name b { font-size: 24px; }
+.lcd-transfer-name span { font-size: 17px; color: #535762; }
 .lcd-car { flex: none; position: relative; width: 300px; height: 190px; border: 8px solid #222; border-radius: 30px; background: #fff; }
 .lcd-car::before { content: ""; position: absolute; inset: 40px 70px; border: 6px solid #bbb; border-radius: 10px; }
 .lcd-car i { position: absolute; top: 20px; bottom: 20px; width: 34px; border-radius: 6px; background: #ccc; }

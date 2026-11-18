@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>报站模拟器</title>
-<link rel="stylesheet" href="/static/style.css?v=5">
-<link rel="stylesheet" href="/static/lcd.css?v=1">
+<link rel="stylesheet" href="/static/style.css?v=7">
+<link rel="stylesheet" href="/static/lcd.css?v=4">
 </head>
 <body>
 <header class="topbar">
@@ -73,9 +73,19 @@
      <div id="placeResults" class="place-results" hidden aria-live="polite"><div id="placeMessage"></div><div id="placeChoices"></div><p class="note">地名数据：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> / <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a></p></div>
    </div>
 
-   <div class="actions main-actions">
+   <div class="actions main-actions" id="mainActions">
     <button class="primary big" id="generate" disabled aria-keyshortcuts="Control+Enter"><i class="play-icon" aria-hidden="true"></i><span id="generateLabel">替换并播放</span></button>
     <button class="ghost" id="playOriginal" disabled>试听原声</button>
+   </div>
+   <div class="jre-panel" id="jrePanel" hidden>
+    <p class="jre-status" id="jreStatus" role="status"></p>
+    <div class="actions">
+     <button class="primary big" id="jreNext" type="button" aria-keyshortcuts="PageDown"><i class="play-icon" aria-hidden="true"></i><span id="jreNextLabel">下一段广播</span></button>
+     <button class="secondary" id="jreMelody" type="button" aria-keyshortcuts="PageUp">发车音乐</button>
+     <button class="ghost" id="jreAuto" type="button" aria-pressed="false">连续运行</button>
+     <button class="ghost" id="jreRestart" type="button">回到始发站</button>
+    </div>
+    <p class="note">快捷键：Page Down 下一段广播，Page Up 发车音乐，End 暂停 / 继续（网页在前台时有效）。全线原声来自本机的 pids-jre-simulator，只放原声，不做替换。</p>
    </div>
    <div class="progress" id="progressBox" hidden role="status"><div class="bar" aria-hidden="true"><i id="progressBar"></i></div><span id="progress"></span></div>
    <div class="actions result-actions" id="resultActions" hidden>
@@ -115,12 +125,12 @@
 
    <details class="fold" id="stationsFold">
     <summary>站点表 <span class="count" id="stationCount"></span></summary>
-    <p class="note">点一行切换到该站。只填中文站名就行：日文写法（汉字或片假名）、读音、英文会自动生成（灰色字），填了就用你填的。“再下一站”自动取下一行。</p>
+    <p class="note" id="stationsNote">点一行切换到该站。只填中文站名就行：日文写法（汉字或片假名）、读音、英文会自动生成（灰色字），填了就用你填的。“再下一站”自动取下一行。</p>
     <div class="table-wrap"><table class="stations" id="stationTable">
      <thead><tr><th>#</th><th>站名</th><th class="c-jn">日文写法</th><th class="c-ja">读音</th><th class="c-en">英文</th><th class="c-no">编号</th><th></th></tr></thead>
      <tbody></tbody>
     </table></div>
-    <div class="actions"><button class="secondary" id="addStation">＋ 添加站点</button><button class="ghost" id="pasteStations">批量粘贴</button><button class="ghost" id="reverseStations">反向</button><button class="ghost" id="clearStations">清空</button></div>
+    <div class="actions" id="stationActions"><button class="secondary" id="addStation">＋ 添加站点</button><button class="ghost" id="pasteStations">批量粘贴</button><button class="ghost" id="reverseStations">反向</button><button class="ghost" id="clearStations">清空</button></div>
     <div id="pasteBox" hidden><textarea id="pasteText" rows="5" placeholder="每行一个站，可用逗号分隔读法：&#10;巴黎,パリ,Paris&#10;伦敦,ロンドン,London"></textarea><div class="actions"><button class="primary" id="pasteApply">替换站点表</button><button class="ghost" id="pasteCancel">取消</button></div></div>
    </details>
 
@@ -201,8 +211,8 @@
 </main>
 <audio id="audio" hidden></audio>
 <div class="toast" id="toast" role="status" hidden></div>
-<script src="/static/lcd.js?v=2"></script>
-<script src="/static/app.js?v=5"></script>
+<script src="/static/lcd.js?v=4"></script>
+<script src="/static/app.js?v=10"></script>
 <script src="/static/cloud.js?v=4"></script>
 </body>
 </html>

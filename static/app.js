@@ -49,7 +49,7 @@ const routes = [
   '车内广播（東大宮站前），清晰。可替换站名。', {sub: '清晰'}),
 
 ];
-const KINDS = ['公交', '地铁', '铁路', '高铁', '巴士'];
+const KINDS = ['JR 全线原声', '公交', '地铁', '铁路', '高铁', '巴士'];
 const known = {巴黎: ['パリ', 'Paris'], 东京: ['東京', 'Tokyo'], 上海: ['上海', 'Shanghai'], 伦敦: ['ロンドン', 'London'], 大阪: ['大阪', 'Osaka'], 北京: ['北京', 'Beijing'], 新宿: ['しんじゅく', 'Shinjuku'], 涩谷: ['しぶや', 'Shibuya'], 渋谷: ['しぶや', 'Shibuya'], 品川: ['しながわ', 'Shinagawa'], 人民广场: ['人民広場', "People's Square"], 浦东机场: ['浦東空港', 'Pudong Airport'], 虹桥枢纽: ['虹橋', 'Hongqiao Hub'], 北京南: ['北京南', 'Beijing South'], 浅草: ['あさくさ', 'Asakusa'], 新大阪: ['しんおおさか', 'Shin-Osaka'], 成田空港: ['なりたくうこう', 'Narita Airport'], 東京: ['とうきょう', 'Tokyo'], 横浜: ['よこはま', 'Yokohama'], 上野: ['うえの', 'Ueno'], パリ: ['パリ', 'Paris'], ロンドン: ['ロンドン', 'London']};
 const TYPES = {
  上海: ['普通', '大站车', '区间车', '快车', '直达', '首班车', '末班车', '定班车', '高峰车', '夜宵线', '各站停车', '快速', '通勤快速', '特别快速', '准急', '急行', '快速急行', '特快', '特急', '直通'],
@@ -77,7 +77,7 @@ const serviceMarks = {
    状态（保存在本机服务 data/settings.json，浏览器里另存一份）
    ===================================================================== */
 let S = {selected: 'bus510', profiles: {}, presets: [], services: {type1: '普通'}, city: '全部'};
-let projects = [], current = null, rev = 0, resultUrl = null, lastRequest = null, saveTimer = null;
+let projects = [], jreRuns = [], current = null, rev = 0, resultUrl = null, lastRequest = null, saveTimer = null;
 const audio = $('audio');
 let cloudUrl = 'https://drive.google.com/drive/my-drive';
 
@@ -110,7 +110,18 @@ function importedRoutes() {
    note: '自己导入的录音。录音来源和使用范围请自行确认。'};
  });
 }
-function allRoutes() { return routes.concat(importedRoutes()) }
+/** 本机 pids-jre-simulator 的全线运行图（只放原声，不做替换） */
+function jreRoutes() {
+ return jreRuns.map(run => ({
+  key: 'jre:' + run.id, city: '东京', kind: 'JR 全线原声', jre: run, ja: true, en: true, numbered: true,
+  name: `${run.line} ${run.direction}`, code: run.code, color: run.color, line: run.line,
+  sub: `${run.type} · ${run.from}→${run.to} · ${run.stops.length} 站`,
+  direction: run.loop ? run.dest + '方面' : run.dest + '行',
+  stations: run.stops.map(x => ({...row(x.name, x.kana, x.en, x.code), jname: x.name, pass: x.pass})),
+  note: `JR 东日本 ${run.line}（${run.remarks || run.direction}，车次 ${run.id.split('/').pop()}）全线原声。录音由铁道爱好者录制，版权归 JR 东日本，仅供个人使用；数据来自 pids-jre-simulator（MIT 授权）。`,
+ }));
+}
+function allRoutes() { return routes.concat(jreRoutes(), importedRoutes()) }
 function baseRoute(key) { return allRoutes().find(r => r.key === key) }
 function presetOf(key) { return S.presets.find(p => p.key === key && baseRoute(p.base)) }
 /** 当前选择：内置线路、导入录音，或“我的线路”（基于某条线路 + 自己的设置） */
@@ -122,7 +133,9 @@ function sel() {
 function profile() {
  const r = sel();
  if (!S.profiles[r.key]) S.profiles[r.key] = {stations: structuredClone(r.stations || [row('巴黎', 'パリ', 'Paris')]), idx: 0};
- const p = S.profiles[r.key]; if (!p.stations.length) p.stations.push(row('')); p.idx = Math.min(Math.max(0, p.idx || 0), p.stations.length - 1);
+ const p = S.profiles[r.key];
+ if (r.jre) p.stations = r.stations;  // 站点和录音一一对应，始终用运行图里的站点
+ if (!p.stations.length) p.stations.push(row('')); p.idx = Math.min(Math.max(0, p.idx || 0), p.stations.length - 1);
  return p;
 }
 const curRow = () => profile().stations[profile().idx];
@@ -182,9 +195,9 @@ const narrowLayout = matchMedia('(max-width: 720px)');
 function sizeRoutePicker() { $('routePanel').open = !narrowLayout.matches }
 sizeRoutePicker();
 narrowLayout.addEventListener('change', sizeRoutePicker);
-const cities = ['全部', '上海', '东京', '国铁'];
+const cities = ['全部', 'JR', '上海', '东京', '国铁'];
 $('cityChips').innerHTML = cities.map(c => `<button class="chip" type="button" data-city="${c}">${c}</button>`).join('');
-function renderRoutes() {
+function renderRoutes() { if (!cities.includes(S.city)) S.city = '全部';
  $('activeRoute').textContent = routeTitle();
  for (const chip of $('cityChips').children) {
   const active = chip.dataset.city === S.city;
@@ -192,10 +205,10 @@ function renderRoutes() {
   chip.setAttribute('aria-pressed', active);
  }
  const q = $('routeSearch').value.trim().toLowerCase();
- const show = r => (S.city === '全部' || r.city === S.city) && (!q || (r.name + r.code + (r.sub || '') + r.kind + (r.city === '国铁' ? 'CR 中国铁路' : '')).toLowerCase().includes(q));
+ const show = r => (S.city === '全部' || r.city === S.city || (S.city === 'JR' && r.jre)) && (!q || (r.name + r.code + (r.sub || '') + r.kind + (r.city === '国铁' ? 'CR 中国铁路' : '')).toLowerCase().includes(q));
  const card = r => `<button class="route ${r.key === S.selected ? 'on' : ''}" aria-pressed="${r.key === S.selected}" data-key="${esc(r.key)}" style="--rc:${esc(r.color)}">
    <span class="code">${esc(r.code)}</span><span class="nm">${esc(r.name)}<span class="sub">${esc(r.sub || r.kind)}</span></span>
-   <span class="tag ${r.preset ? 'mine' : 'real'}">${r.preset ? '我的' : projects.some(p => p.id === r.pid) ? '原声' : '显示模板'}</span></button>`;
+   <span class="tag ${r.preset ? 'mine' : 'real'}">${r.preset ? '我的' : r.jre || projects.some(p => p.id === r.pid) ? '原声' : '显示模板'}</span></button>`;
  let html = '';
  const mine = S.presets.filter(p => baseRoute(p.base)).map(p => { const b = baseRoute(p.base); const pr = S.profiles[p.key] || {}; return {...b, key: p.key, preset: p, name: p.name, code: pr.code || b.code, color: pr.color || b.color, sub: '基于 ' + b.name} }).filter(show);
  if (mine.length) html += `<div class="route-group">我的线路</div>` + mine.map(r => {
@@ -284,7 +297,7 @@ function loadRoute() {
  $('readingsFold').hidden = !r.ja && !r.en && !has('number');
  clearPlaceResults();
  $('routeTitle').textContent = routeTitle(r);
- $('routeTag').textContent = r.preset ? '我的线路' : current ? '原声' : '显示模板'; $('routeTag').className = 'tag ' + (r.preset ? 'mine' : 'real');
+ $('routeTag').textContent = r.preset ? '我的线路' : current || r.jre ? '原声' : '显示模板'; $('routeTag').className = 'tag ' + (r.preset ? 'mine' : 'real');
  $('routeNote').textContent = (r.preset ? `基于「${baseRoute(r.preset.base)?.name || ''}」。改动会自动保存到这条线路。` : '') + (r.note || '');
  $('routeSource').hidden = !r.sourceUrl;
  if (r.sourceUrl) $('routeSource').href = r.sourceUrl;
@@ -297,23 +310,31 @@ function loadRoute() {
  $('lineCode').value = p.code ?? r.code; $('lineColor').value = p.color ?? r.color; $('boardLineName').value = p.boardLine ?? '';
  $('direction').value = p.direction ?? r.direction ?? (r.terminal ? r.terminal + (r.city === '东京' ? '方面' : '方向') : '');
  $('next2Ja').value = ''; $('next2En').value = '';
+ const jre = !!r.jre;
+ $('jrePanel').hidden = !jre; $('mainActions').hidden = jre; $('translatePlace').hidden = jre;
+ if (jre) for (const id of ['readingsFold', 'editFold']) $(id).hidden = true;
+ else $('editFold').hidden = false;
+ $('stationActions').hidden = jre; $('stationName').readOnly = jre;
+ $('stationsNote').textContent = jre ? '点一行切换到该站。灰色的是快速、特快不停的通过站。站点和原声一一对应，不能修改。' : '点一行切换到该站。只填中文站名就行：日文写法（汉字或片假名）、读音、英文会自动生成（灰色字），填了就用你填的。“再下一站”自动取下一行。';
+ if (jre) { J.state = 'at'; J.step = 0; jreUI() }
  $('playOriginal').disabled = !current;
- $('sourceStatus').textContent = !current ? '这条线路没有本地录音，可在右侧导入原声。' : !current.markers?.length ? '可试听原声。完成站名识别后可在原声中替换。' : '';
+ $('sourceStatus').textContent = jre ? '' : !current ? '这条线路没有本地录音，可在右侧导入原声。' : !current.markers?.length ? '可试听原声。完成站名识别后可在原声中替换。' : '';
  $('presetName').value = r.preset ? r.preset.name : ''; $('deletePreset').hidden = !r.preset; $('resetRoute').hidden = !!r.preset; $('importDelete').hidden = !r.imported;
- markSwatch(); $('extraFold').hidden = !(has('next2') || has('transfer') || r.numbered); fillTypes();
+ markSwatch(); $('extraFold').hidden = !!r.jre || !(has('next2') || has('transfer') || r.numbered); fillTypes();
  renderStations(); showStation(); renderEditable(); invalidate(); refreshReadings();
 }
 
 function renderStations() {
  const p = profile(), r = sel();
  $('stationCount').textContent = `${p.stations.length} 站`;
- $('stationTable').tBodies[0].innerHTML = p.stations.map((s, i) => `<tr class="${i === p.idx ? 'on' : ''}" data-i="${i}"><td title="切换到这一站">${i + 1}</td>
-  <td><input data-k="name" value="${esc(s.name)}" placeholder="站名"></td>
-  <td class="c-jn"><input data-k="jname" value="${esc(s.jname)}" placeholder="${esc(fill(s).jname)}"></td>
-  <td class="c-ja"><input data-k="ja" value="${esc(s.ja)}" placeholder="${esc(fill(s).ja)}"></td>
-  <td class="c-en"><input data-k="en" value="${esc(s.en)}" placeholder="${esc(fill(s).en)}"></td>
-  <td class="c-no"><input data-k="no" value="${esc(s.no)}" placeholder="—"></td>
-  <td><button class="del" title="删除这一站">✕</button></td></tr>`).join('');
+ const ro = r.jre ? ' readonly' : '';
+ $('stationTable').tBodies[0].innerHTML = p.stations.map((s, i) => `<tr class="${i === p.idx ? 'on' : ''}${s.pass ? ' pass' : ''}" data-i="${i}"><td title="切换到这一站">${i + 1}</td>
+  <td><input data-k="name" value="${esc(s.name)}" placeholder="站名"${ro}>${s.pass ? '<small>通过</small>' : ''}</td>
+  <td class="c-jn"><input data-k="jname" value="${esc(s.jname)}" placeholder="${esc(fill(s).jname)}"${ro}></td>
+  <td class="c-ja"><input data-k="ja" value="${esc(s.ja)}" placeholder="${esc(fill(s).ja)}"${ro}></td>
+  <td class="c-en"><input data-k="en" value="${esc(s.en)}" placeholder="${esc(fill(s).en)}"${ro}></td>
+  <td class="c-no"><input data-k="no" value="${esc(s.no)}" placeholder="—"${ro}></td>
+  <td>${r.jre ? '' : '<button class="del" title="删除这一站">✕</button>'}</td></tr>`).join('');
  document.querySelectorAll('.c-ja,.c-jn').forEach(e => e.hidden = !r.ja);
  document.querySelectorAll('.c-en').forEach(e => e.hidden = !r.en);
  document.querySelectorAll('.c-no').forEach(e => e.hidden = !(r.ja || has('number') || r.numbered));
@@ -331,6 +352,7 @@ function navButtons() {
 }
 function selectRow(i) {
  const p = profile(); if (i === p.idx) return; p.idx = i; lcdPhase = defaultPhase();
+ if (sel().jre) { J.state = 'at'; J.step = 0; jreUI() }
  clearPlaceResults();
  document.querySelectorAll('#stationTable tr.on').forEach(x => x.classList.remove('on'));
  $('stationTable').tBodies[0].rows[i]?.classList.add('on'); navButtons(); showStation(); invalidate(); persist();
@@ -462,25 +484,26 @@ const LCD_DEFAULTS = {state: 'auto', speed: 3, stops: 6, size: 100, kana: true, 
 let lcdPhase = 'next', lcdData = null;
 const lcdOpt = () => ({...LCD_DEFAULTS, ...(S.lcd || {})});
 /** 线路本身的录音是“即将到站”或“到站”广播时，默认显示对应状态 */
-function defaultPhase() { return {'即将到站': 'soon', '到站': 'at'}[sel().stationLabel] || 'next' }
+function defaultPhase() { return sel().jre ? 'at' : {'即将到站': 'soon', '到站': 'at'}[sel().stationLabel] || 'next' }
 function setPhase(phase) { if (phase === lcdPhase) return; lcdPhase = phase; draw() }
 function draw() {
  const r = sel(), p = profile(), s = curRow(), f = fill(s), japanese = r.city === '东京', o = lcdOpt();
- const type = $('type1').value;
+ const run = r.jre, stop = run?.stops[p.idx];
+ const type = run ? run.type : $('type1').value;
  const nameOf = item => (japanese ? fill(item).jname || item.name : item.name).trim() || '—';
  const count = +o.stops, start = Math.max(0, Math.min(p.idx - 1, p.stations.length - count));
  const stops = p.stations.slice(start, start + count).map((item, i) => ({
-  name: nameOf(item), no: (item.no || '').trim(), state: start + i < p.idx ? 'past' : start + i === p.idx ? 'current' : 'next'}));
+  name: nameOf(item), no: (item.no || '').trim(), pass: !!item.pass, state: start + i < p.idx ? 'past' : start + i === p.idx ? 'current' : 'next'}));
  lcdData = {
   city: japanese ? 'ja' : 'zh',
   line: $('boardLineName').value.trim() || $('lineName').value.trim() || r.line || r.name,
   code: $('lineCode').value || r.code, color: p.color || r.color,
-  type, mark: Object.hasOwn(serviceMarks, type) ? serviceMarks[type] : '',
-  dest: $('direction').value.trim(),
+  type, mark: Object.hasOwn(serviceMarks, type) ? serviceMarks[type] : '', typeColor: run?.type_color || '',
+  dest: stop ? (run.loop ? stop.dest + '方面' : stop.dest + '行') : $('direction').value.trim(),
   phase: o.state === 'auto' ? lcdPhase : o.state,
-  station: {zh: s.name.trim(), jname: japanese ? f.jname : '', kana: japanese ? f.ja : '', en: r.en ? f.en : '', no: $('numberLabel').hidden ? '' : (s.no || '').trim()},
+  station: {zh: s.name.trim(), jname: japanese ? f.jname : '', kana: japanese ? f.ja : '', en: r.en ? f.en : '', no: $('numberLabel').hidden ? '' : (s.no || '').trim(), code3: stop?.code3 || ''},
   stops,
-  transfer: {main: (s.tzh || '').trim() || (japanese ? (s.tja || '').trim() : ''), en: (s.ten || '').trim()},
+  transfer: {main: (s.tzh || '').trim() || (japanese ? (s.tja || '').trim() : ''), en: (s.ten || '').trim(), list: stop?.transfers || []},
   door: s.sdoor || (s.door && s.door !== 'original' ? s.door : ''),
   speed: +o.speed, langs: {kana: o.kana, en: o.en && !!r.en, zh: o.zh},
  };
@@ -599,8 +622,8 @@ async function startPlayback(title, focusControl = false) {
 }
 // 播放报站录音时，显示屏（自动模式）切到「即将到站」，播完切到「到站」；发车音乐等其他声音不影响
 let playingReport = false;
-function play(url, title) { audio.src = url; playingReport = !url.startsWith('/static/sounds/'); if (playingReport) setPhase('soon'); startPlayback(title) }
-function stop() { playbackRevision++; audio.pause(); audio.currentTime = 0; setPlayer('idle'); if (playingReport) { playingReport = false; setPhase(defaultPhase()) } }
+function play(url, title, report = !url.startsWith('/static/sounds/')) { jreAfter = null; audio.src = url; playingReport = report; if (playingReport) setPhase('soon'); startPlayback(title) }
+function stop() { playbackRevision++; audio.pause(); audio.currentTime = 0; setPlayer('idle'); jreAfter = null; if (J.auto) { J.auto = false; jreUI() } if (playingReport) { playingReport = false; setPhase(defaultPhase()) } }
 $('pausePlay').onclick = () => {
  const hadFocus = document.activeElement === $('pausePlay');
  playbackRevision++; audio.pause(); setPlayer('paused');
@@ -608,7 +631,65 @@ $('pausePlay').onclick = () => {
 };
 $('resumePlay').onclick = () => startPlayback(undefined, document.activeElement === $('resumePlay'));
 $('stopPlay').onclick = stop;
-audio.addEventListener('ended', () => { setPlayer('idle'); if (playingReport) { playingReport = false; setPhase('at') } });
+audio.addEventListener('ended', () => { setPlayer('idle'); if (playingReport) { playingReport = false; setPhase('at') } const after = jreAfter; jreAfter = null; after?.() });
+
+/* ---------- JR 全线原声：按真实顺序播放 ----------
+   运行图每站的 pa 是列车驶向这一站途中的广播（「次は」「まもなく」），sta 是这一站站台上的发车音乐。
+   J.state：at = 停在 profile().idx 这一站；run = 正驶向这一站，J.step 是下一段要播的广播。 */
+const J = {state: 'at', step: 0, auto: false};
+let jreAfter = null;
+const jreStop = () => sel().jre?.stops[profile().idx];
+function jreNextIndex() { const stops = sel().jre.stops; for (let i = profile().idx + 1; i < stops.length; i++) if (!stops[i].pass) return i; return -1 }
+function jrePlay(url, title, phase, after) { play(url, title, false); jreAfter = after; if (phase) setPhase(phase) }
+function jreUI() {
+ const run = sel().jre; if (!run) return;
+ const s = jreStop(), n = jreNextIndex(), next = n >= 0 ? run.stops[n].name : '';
+ $('jreStatus').textContent = J.state === 'at'
+  ? `停在「${s.name}」。` + (n >= 0 ? `下一站：${next}。按「发车」开始下一段。` : '这是终点站。')
+  : `正开往「${s.name}」：车内广播 ${Math.min(J.step, s.pa.length)} / ${s.pa.length}。`;
+ $('jreNextLabel').textContent = J.state === 'at' ? (n >= 0 ? `发车，开往${next}` : '已到终点') : J.step < s.pa.length ? '下一段广播' : '到站';
+ $('jreNext').disabled = J.state === 'at' && n < 0;
+ $('jreMelody').disabled = J.state !== 'at' || !s.sta.length;
+ $('jreAuto').textContent = J.auto ? '停止连续运行' : '连续运行'; $('jreAuto').setAttribute('aria-pressed', J.auto);
+}
+function jreDepart() {
+ const n = jreNextIndex();
+ if (n < 0) { J.auto = false; jreUI(); toast('已到终点站'); return }
+ selectRow(n); J.state = 'run'; J.step = 0; jreTrack();
+}
+function jreTrack() {
+ const s = jreStop(), url = s.pa[J.step];
+ if (!url) { jreArrive(); return }
+ J.step++; jreUI();
+ jrePlay(url, `${sel().jre.line} · ${s.name} · 车内广播 ${J.step}/${s.pa.length}`, /-arr/.test(url) ? 'soon' : 'next',
+  () => J.step >= s.pa.length ? jreArrive() : J.auto ? jreTrack() : jreUI());
+}
+function jreArrive() {
+ J.state = 'at'; setPhase('at'); jreUI();
+ if (J.auto) setTimeout(() => { if (J.auto && J.state === 'at') jreMelody() }, 1500);
+}
+function jreMelody(i = 0) {
+ const s = jreStop(), url = s?.sta[i];
+ if (!url) { if (J.auto) jreDepart(); else jreUI(); return }
+ jrePlay(url, `${sel().jre.line} · ${s.name} · 发车音乐`, null, () => jreMelody(i + 1));
+}
+function jreNext() { if (!sel().jre) return; if (J.state === 'at') jreDepart(); else if (J.step < jreStop().pa.length) jreTrack(); else jreArrive() }
+$('jreNext').onclick = jreNext;
+$('jreMelody').onclick = () => { if (J.state === 'at') jreMelody() };
+$('jreAuto').onclick = () => {
+ if (J.auto) { stop(); return }
+ J.auto = true; jreUI();
+ if ($('player').dataset.state === 'playing') return;  // 正在播放的这段结束后自动接下去
+ if (J.state === 'at') jreMelody(); else jreTrack();
+};
+$('jreRestart').onclick = () => { stop(); const p = profile(); p.idx = 0; J.state = 'at'; J.step = 0; lcdPhase = 'at'; renderStations(); showStation(); persist(); jreUI() };
+document.addEventListener('keydown', e => {
+ if (!sel().jre || e.isComposing || e.ctrlKey || e.altKey || e.metaKey) return;
+ if (e.target.closest?.('input:not([readonly]), textarea, select')) return;
+ if (e.key === 'PageDown') { e.preventDefault(); if (!$('jreNext').disabled) jreNext() }
+ else if (e.key === 'PageUp') { e.preventDefault(); if (!$('jreMelody').disabled) jreMelody() }
+ else if (e.key === 'End') { e.preventDefault(); const st = $('player').dataset.state; if (st === 'playing') $('pausePlay').click(); else if (st === 'paused') $('resumePlay').click() }
+});
 
 /* ---------- 其他广播 ---------- */
 function mountSounds(group, selectId, buttonId) {
@@ -697,6 +778,7 @@ $('importDelete').onclick = async () => {
 
 /* ---------- 启动 ---------- */
 (async () => {
+ jreRuns = await api('/api/jre/routes').catch(() => []);
  try { projects = await api('/api/projects') } catch (e) { $('sourceStatus').textContent = '无法连接本机服务，请重新启动模拟器。'; return }
  const options = await api('/api/options').catch(() => ({}));
  if (options.cloud_url) cloudUrl = options.cloud_url;

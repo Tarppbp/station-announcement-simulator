@@ -3,5 +3,6 @@
   "asr_python": "",
   "asr_model": "",
   "drive_folder": "",
-  "drive_url": ""
+  "drive_url": "",
+  "jre_dir": ""
 }

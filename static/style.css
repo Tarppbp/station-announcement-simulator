@@ -371,6 +371,13 @@ details > summary:hover { color: var(--accent); }
 .lcd-settings input[type="range"] { width: 100%; accent-color: var(--accent); }
 .lcd-langs { display: flex; flex-wrap: wrap; gap: 0 16px; }
 .lcd-langs label.check { margin-top: 6px; color: var(--ink); }
+.jre-panel { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.jre-panel .actions { flex-wrap: wrap; }
+.jre-status { margin: 0; color: var(--ink); overflow-wrap: anywhere; font-weight: 750; }
+.jre-panel button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.stations tr.pass td, .stations tr.pass input { color: var(--muted); }
+.stations tr.pass td { background: var(--soft); }
+.stations tr.pass small { display: inline-block; margin-left: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 @media (max-width: 720px) {
   .lcd-wrap { width: 100%; }
   .lcd-frame { border-radius: 7px; }
