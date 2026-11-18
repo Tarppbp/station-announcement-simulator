@@ -2,6 +2,12 @@
 
 本地运行的车厢下一站显示与报站工具。选择中国或日本线路，编辑停靠站、线路编号和车种。可以导入自己的录音、试听原声，再按需替换原声中已定位的站名。
 
+## 开发协作
+
+- **Tarppbp** 负责项目维护与功能方向，并提供使用反馈。
+- **OpenAI Codex** 搭建并发布首版，完成原声站名替换和车厢屏，并在 JR 全线接入后补上车种颜色、分行站码、通过站和双语换乘页。参见[首次发布](https://github.com/Tarppbp/station-announcement-simulator/commit/4a7ed26fc7d022c607c41d1716619b521990a86f)和 [JR 全线合并](https://github.com/Tarppbp/station-announcement-simulator/commit/c992a54)。
+- **Claude Code** 加入车厢屏轮播，接入 JR 全线运行图和原声播放，并拆分原声与改编两个页面。参见[原声与改编页面](https://github.com/Tarppbp/station-announcement-simulator/commit/50d76a79d0e88f82614330452ee15994b4317c76)。
+
 ## 车内动态显示屏
 
 仿车门上方液晶屏的动态画面，按 16:9 绘制并随窗口等比缩放：
