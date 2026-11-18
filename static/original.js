@@ -1,7 +1,9 @@
 'use strict';
-/* 报站模拟器 · 原声版
-   只播放原声，不做替换，不用 AI。选线路和种别，按真实顺序播放车内广播和发车音乐，可切换上一站、下一站。
-   数据来自 /api/jre/routes（本机 pids-jre-simulator）。完整版（自定义、AI 生成）在 /full，代码另存在 app.js。
+/* 报站模拟器 · 原声页
+   只播放原声，不做替换，不用 AI。左边两个文件夹：
+   - 全线原声：JR 全线运行图（/api/jre/routes，本机 pids-jre-simulator），选种别，按真实顺序播放，可切换上一站、下一站；
+   - 单段原声：data/<pid>/original.wav 的一段样本（上海公交 510 路、国铁、JR 单站样例、自己导入的录音），只有一站。
+   改编页（自定义、AI 生成替换）在 /edit，代码在 app.js。
 
    每个运行图的一站：pa = 驶向这一站途中的车内广播（「次は」「まもなく」），sta = 这一站站台上的发车音乐。
    state：at = 停在 pos 这一站；run = 正驶向 pos 这一站，step 是下一段要播的广播。 */
@@ -13,15 +15,16 @@ const channel = 'BroadcastChannel' in window ? new BroadcastChannel('station-sim
 const MARKS = {中央特快: 'chuo', 青梅特快: 'ome', 特別快速: 'chuo', 快速: 'rapid', 通勤快速: 'rapid', 快速アクティー: 'rapid', 快速アーバン: 'rapid', 快速ラビット: 'rapid', 特急: 'express', 通勤特快: 'express'};
 const LINE_ORDER = ['山手線', '中央線快速', '京浜東北線', '総武快速線', '京葉線', '埼京線', '南武線', '東海道線', '高崎線', '宇都宮線'];
 
-let runs = [], lines = [];
-const S = {line: '', run: '', pos: 0, state: 'at', step: 0, phase: 'at', auto: false};
+let runs = [], lines = [], singles = [];
+const S = {line: '', run: '', single: '', pos: 0, state: 'at', step: 0, phase: 'at', auto: false};
 let after = null, data = null;
 
-function save() { try { localStorage.setItem('station-sim-original', JSON.stringify({line: S.line, run: S.run, pos: S.pos})) } catch (e) {} }
+function save() { try { localStorage.setItem('station-sim-original', JSON.stringify({line: S.line, run: S.run, pos: S.pos, single: S.single})) } catch (e) {} }
 function restore() { try { return JSON.parse(localStorage.getItem('station-sim-original') || 'null') || {} } catch (e) { return {} } }
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600) }
 
-const run = () => runs.find(r => r.id === S.run);
+const run = () => S.single ? null : runs.find(r => r.id === S.run);
+const single = () => singles.find(r => r.key === S.single);
 const stop = () => run()?.stops[S.pos];
 const lineRuns = name => runs.filter(r => r.line === name);
 function nextIndex(from = S.pos, dir = 1) {
@@ -32,12 +35,19 @@ function nextIndex(from = S.pos, dir = 1) {
 
 /* ---------- 线路和种别 ---------- */
 function renderLines() {
- $('lineList').innerHTML = lines.map(name => {
+ const open = {...(renderLines.open || {full: true, single: true})};
+ for (const d of $('lineList').querySelectorAll('details[data-folder]')) open[d.dataset.folder] = d.open;
+ renderLines.open = open;
+ const card = (attr, on, color, code, name, sub) => `<button type="button" class="o-line ${on ? 'on' : ''}" aria-pressed="${on}" ${attr} style="--c:${esc(color)}">
+   <span class="o-badge">${esc(code)}</span><span class="o-line-name">${esc(name)}<small>${esc(sub)}</small></span></button>`;
+ const full = lines.map(name => {
   const rs = lineRuns(name), r = rs[0];
   const sub = [...new Set(rs.map(x => x.direction))].join('・') + ' · ' + rs.map(x => x.type).join('／');
-  return `<button type="button" class="o-line ${name === S.line ? 'on' : ''}" aria-pressed="${name === S.line}" data-line="${esc(name)}" style="--c:${esc(r.color)}">
-   <span class="o-badge">${esc(r.code)}</span><span class="o-line-name">${esc(name)}<small>${esc(sub)}</small></span></button>`;
+  return card(`data-line="${esc(name)}"`, !S.single && name === S.line, r.color, r.code, name, sub);
  }).join('');
+ const one = singles.map(r => card(`data-single="${esc(r.key)}"`, r.key === S.single, r.color, r.code, r.name, r.sub || r.kind || '')).join('');
+ const folder = (key, title, hint, body) => `<details class="o-folder" data-folder="${key}" ${open[key] ? 'open' : ''}><summary><span>${title}</span><small>${hint}</small></summary><div class="o-line-list">${body || '<p class="o-note">暂无</p>'}</div></details>`;
+ $('lineList').innerHTML = folder('full', '全线原声', `${lines.length} 条线，可逐站切换`, full) + folder('single', '单段原声', `${singles.length} 段，每段一站`, one);
 }
 function renderServices() {
  const rs = lineRuns(S.line);
@@ -50,10 +60,42 @@ function chooseLine(name) {
 }
 function chooseRun(id) {
  halt();
+ S.single = ''; document.body.dataset.mode = 'jre';
  S.run = id; S.line = run().line; S.pos = 0; S.state = 'at'; S.step = 0; S.phase = 'at';
  renderLines(); renderServices(); renderStops(); draw(); save();
 }
-$('lineList').onclick = e => { const b = e.target.closest('[data-line]'); if (b && b.dataset.line !== S.line) chooseLine(b.dataset.line) };
+$('lineList').onclick = e => {
+ const b = e.target.closest('[data-line]'); if (b && (S.single || b.dataset.line !== S.line)) { chooseLine(b.dataset.line); return }
+ const o = e.target.closest('[data-single]'); if (o && o.dataset.single !== S.single) chooseSingle(o.dataset.single);
+};
+
+/* ---------- 单段原声 ---------- */
+function chooseSingle(key) {
+ halt();
+ const r = singles.find(x => x.key === key); if (!r) return;
+ S.single = key; S.run = ''; S.line = '';
+ S.phase = {'即将到站': 'soon', '到站': 'at'}[r.stationLabel] || 'next';
+ document.body.dataset.mode = 'single';
+ $('status').textContent = '';
+ $('singleTitle').textContent = r.name;
+ $('singleNote').textContent = (r.sub ? r.sub + '。' : '') + '这段录音只有一站，按「播放原声」播放。';
+ renderLines(); draw(); save();
+}
+function drawSingle() {
+ const r = single(); if (!r) return;
+ const s = r.stations[0] || row(''), ja = r.city === '东京';
+ const en = s.en || r.stationEnglish?.[s.name] || '';
+ data = {
+  city: ja ? 'ja' : 'zh', line: r.line || r.name, code: r.code, color: r.color, type: '', mark: '', typeColor: '',
+  dest: r.direction || (r.terminal ? r.terminal + (ja ? '方面' : '方向') : ''), phase: S.phase,
+  station: {zh: s.name, jname: ja ? s.name : '', kana: ja ? s.ja : '', en: r.en ? en : '', no: s.no || '', code3: ''},
+  stops: r.stations.map((x, i) => ({name: x.name, no: x.no || '', pass: false, state: i === 0 ? 'current' : 'next'})),
+  transfer: {main: ja ? (s.tja || '') : '', en: s.ten || '', list: []}, door: '', speed: 3, langs: {kana: true, en: true, zh: false},
+ };
+ lcd.update(data); channel?.postMessage(data);
+ try { localStorage.setItem('station-sim-lcd', JSON.stringify(data)) } catch (e) {}
+}
+$('playOriginal').onclick = () => { const r = single(); if (r) play(`/data/${r.pid}/original.wav`, '原声 · ' + r.name, null, null) };
 $('serviceTabs').onclick = e => { const b = e.target.closest('[data-run]'); if (b && b.dataset.run !== S.run) chooseRun(b.dataset.run) };
 
 /* ---------- 停靠站列表 ---------- */
@@ -74,6 +116,7 @@ $('stopList').onclick = e => { const li = e.target.closest('[data-i]'); if (li &
 
 /* ---------- 显示屏 ---------- */
 function draw() {
+ if (S.single) { drawSingle(); return }
  const r = run(), s = stop(); if (!r || !s) return;
  const count = 6, start = Math.max(0, Math.min(S.pos - 1, r.stops.length - count));
  data = {
@@ -141,7 +184,7 @@ function melody(i = 0) {
 function advance() { if (S.state === 'at') depart(); else if (S.step < stop().pa.length) track(); else { halt(); arrive() } }
 
 function ui() {
- const r = run(), s = stop(); if (!r || !s) return;
+ const r = run(), s = stop(); if (!r || !s) return;  // 单段原声没有逐站控制
  const n = nextIndex(), p = nextIndex(S.pos, -1), next = n >= 0 ? r.stops[n].name : '';
  $('status').textContent = S.state === 'at'
   ? `停在「${s.name}」。` + (n >= 0 ? `下一站：${next}。` : '这是终点站。')
@@ -168,6 +211,7 @@ $('lcdFull').onclick = () => $('lcdFrame').requestFullscreen?.().catch(() => toa
 $('lcdFrame').ondblclick = () => document.fullscreenElement ? document.exitFullscreen() : $('lcdFrame').requestFullscreen?.().catch(() => {});
 $('lcdWindow').onclick = () => { if (!window.open('/static/display.html', 'station-sim-lcd', 'width=1280,height=760')) toast('浏览器拦截了新窗口，请允许弹出窗口') };
 document.addEventListener('keydown', e => {
+ if (S.single && e.key === 'End' && !e.altKey && !e.ctrlKey) { e.preventDefault(); const st = $('player').dataset.state; if (st === 'playing') $('pausePlay').click(); else if (st === 'paused') $('resumePlay').click(); return }
  if (!run() || e.isComposing || e.ctrlKey || e.metaKey) return;
  if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); $('prevStation').click(); return }
  if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); $('nextStation').click(); return }
@@ -178,13 +222,28 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- 启动 ---------- */
+/** 单段原声：routes.js 里的内置样本（本机有录音的）加上自己导入的录音 */
+function buildSingles(projects) {
+ const has = new Set(projects.map(p => p.id));
+ const builtIn = routes.filter(r => has.has(r.pid));
+ const mine = projects.filter(p => p.category === '我的录音').map(p => {
+  const ms = p.markers || [], ja = p.locale === 'JA' || ms.some(m => m.lang === 'JA');
+  return {key: 'p_' + p.id, pid: p.id, name: p.name, code: 'REC', color: '#5b6b8c', city: ja ? '东京' : '上海', kind: '我的录音', sub: '自己导入的录音',
+   en: ms.some(m => m.lang === 'EN'), line: p.line || '', stations: [row(ms.find(m => m.field === 'station')?.text || p.station || '')]};
+ });
+ return builtIn.concat(mine);
+}
+
 (async () => {
- try { runs = await (await fetch('/api/jre/routes')).json() } catch (e) { runs = [] }
- if (!Array.isArray(runs) || !runs.length) { $('empty').hidden = false; document.querySelector('.o-main').hidden = true; return }
+ const [r1, r2] = await Promise.all([fetch('/api/jre/routes').then(r => r.json()).catch(() => []), fetch('/api/projects').then(r => r.json()).catch(() => [])]);
+ runs = Array.isArray(r1) ? r1 : []; singles = buildSingles(Array.isArray(r2) ? r2 : []);
+ if (!runs.length && !singles.length) { $('empty').hidden = false; document.querySelector('.o-main').hidden = true; return }
  const names = [...new Set(runs.map(r => r.line))];
  lines = names.sort((a, b) => (LINE_ORDER.indexOf(a) + 1 || 99) - (LINE_ORDER.indexOf(b) + 1 || 99));
  const saved = restore();
- if (runs.some(r => r.id === saved.run)) {
+ if (saved.single && singles.some(r => r.key === saved.single)) chooseSingle(saved.single);
+ else if (!runs.length) chooseSingle(singles[0].key);
+ else if (runs.some(r => r.id === saved.run)) {
   chooseRun(saved.run);
   if (saved.pos > 0 && saved.pos < run().stops.length && !run().stops[saved.pos].pass) goTo(saved.pos);
  } else chooseLine(lines[0]);

@@ -9,7 +9,7 @@ DATA.mkdir(exist_ok=True)
 os.environ.update(HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', HF_HOME=str(ROOT/'cache'), TMP=str(ROOT/'tmp'), TEMP=str(ROOT/'tmp'))
 (ROOT/'tmp').mkdir(exist_ok=True)
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import numpy as np
 import soundfile as sf
@@ -20,7 +20,7 @@ app = FastAPI()
 async def no_stale_pages(request, call_next):
     # 网页文件每次都向服务确认是否有更新，改了 static/ 下的文件刷新就能看到
     response = await call_next(request)
-    if request.url.path in ('/', '/full') or request.url.path.startswith('/static/'):
+    if request.url.path in ('/', '/edit') or request.url.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'no-cache'
     return response
 
@@ -288,12 +288,15 @@ def _tmp(folder, tag, clip):
 
 
 # ---------------------------------------------------------------- API
-# 默认打开原声版（只放原声、切换站点）；完整版（自定义、AI 生成替换）在 /full
+# 两个页面：/ 是原声页（只放原声、切换站点），/edit 是改编页（自定义、AI 生成替换）；旧地址 /full 转到 /edit
 @app.get('/')
 def home(): return FileResponse(ROOT/'static'/'original.html')
 
+@app.get('/edit')
+def edit(): return FileResponse(ROOT/'static'/'index.html')
+
 @app.get('/full')
-def full(): return FileResponse(ROOT/'static'/'index.html')
+def full(): return RedirectResponse('/edit')
 
 @app.get('/api/projects')
 def projects():

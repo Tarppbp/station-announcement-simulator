@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>报站模拟器</title>
-<link rel="stylesheet" href="/static/style.css?v=7">
+<title>报站模拟器 · 改编</title>
+<link rel="stylesheet" href="/static/style.css?v=8">
 <link rel="stylesheet" href="/static/lcd.css?v=4">
 </head>
 <body>
 <header class="topbar">
  <div class="topbar-inner">
  <a href="#workstation" class="brand"><span class="brand-icon" aria-hidden="true"></span>报站模拟器</a>
- <nav class="top-links" aria-label="页面导航"><a href="#workstation">报站台</a><a href="#otherBroadcasts" id="otherLink" hidden>其他广播</a></nav>
+ <nav class="page-tabs" aria-label="页面"><a href="/">原声</a><a href="/edit" aria-current="page">改编</a></nav>
+ <nav class="top-links" aria-label="页面导航"><a href="#otherBroadcasts" id="otherLink" hidden>其他广播</a></nav>
  <div class="player" id="player" data-state="idle">
   <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i></span>
   <span class="player-title" id="nowPlaying" aria-live="polite">未在播放</span>
@@ -22,7 +23,19 @@
  </div>
 </header>
 
-<main class="layout">
+<section class="base-picker" id="basePicker" hidden aria-labelledby="pickerTitle">
+ <div class="card">
+  <h1 id="pickerTitle">选一段原声开始改编</h1>
+  <p class="note">改编会保留原声，只把录音里已定位的名称（线路名、终点、站名等）换成你填的内容，替换的部分由 AI 生成。选好后可以改线路名称、线路编号、颜色和车站，改好可以存成「我的线路」。</p>
+  <h2 id="myBaseTitle">继续改编我的线路</h2>
+  <div class="base-grid" id="myBaseGrid"></div>
+  <h2>原声样本</h2>
+  <div class="base-grid" id="baseGrid"></div>
+  <p class="note">JR 全线原声还没有标出每段录音里站名的位置，暂时只能在「原声」页播放，不能改编。</p>
+ </div>
+</section>
+
+<main class="layout" id="editorLayout">
  <!-- ============ 左栏：线路 ============ -->
  <aside class="col routes-col">
   <details class="card route-panel" id="routePanel" open>
@@ -55,7 +68,7 @@
 
   <div class="workbench">
   <section class="card composer" id="announcement" aria-labelledby="routeTitle">
-   <div class="card-head"><h1 id="routeTitle" tabindex="-1">报站</h1><span class="tag" id="routeTag"></span></div>
+   <div class="card-head"><h1 id="routeTitle" tabindex="-1">报站</h1><span class="tag" id="routeTag"></span><button class="ghost small change-base" id="changeBase" type="button">换一段原声</button></div>
 
    <div class="now-station">
     <div class="station-toolbar">
@@ -212,7 +225,8 @@
 <audio id="audio" hidden></audio>
 <div class="toast" id="toast" role="status" hidden></div>
 <script src="/static/lcd.js?v=4"></script>
-<script src="/static/app.js?v=10"></script>
+<script src="/static/routes.js?v=1"></script>
+<script src="/static/app.js?v=11"></script>
 <script src="/static/cloud.js?v=4"></script>
 </body>
 </html>

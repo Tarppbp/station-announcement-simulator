@@ -1,54 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const row = (name, ja = '', en = '', no = '', tja = '', ten = '') => ({name, ja, en, no, tja, ten});
-
-/* =====================================================================
-   线路定义
-   线路有原声时可以试听及替换已定位的名称。
-   ===================================================================== */
-const JR = (key, pid, name, code, color, direction, stations, note, extra = {}) => ({
- key, city: '东京', kind: '铁路', name, code, color, pid, ja: true, en: true, line: name, direction, stations, note, ...extra});
-const CR = (key, pid, name, code, station, english, stationLabel, sub, note, serial) => ({
- key, pid, name, code, stationLabel, sub, note,
- city: '国铁', kind: '高铁', color: '#c8102e', en: true, line: name,
- stations: [row(station)], stationEnglish: {[station]: english},
- sourceUrl: 'https://www.jprailfan.com/announce/downconfirm.php?serial=' + serial
-});
-const routes = [
- {key: 'bus510', city: '上海', kind: '公交', name: '公交 510 路', code: '510', color: '#e77736', pid: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', en: true,
-  line: '510路', terminal: '武威东路真金路', direction: '武威东路真金路方向', sub: '普通话 · 沪语 · 英语',
-  stations: [row('公平路东长治路', '', 'Gongping Road at Dongchangzhi Road'), row('巴黎', 'パリ', 'Paris')],
-  note: '普通话、沪语、英语原声。线路名、终点站、下一站会用语音生成替换，其余保留原声；沪语里的新名称暂用普通话。'},
- CR('crG3106', 'e521e8a6e66d880504ea0b20bae44ab8', '国铁 G3106 · 南京南', 'G3106',
-  '南京南', 'Nanjing Nan', '即将到站', '到站预告 · 中英',
-  '2022 年车内实录。可改中英文站名，保留行李和下车提示。', '2134'),
- CR('crG5602', 'f527a0650e23c6ed1aec3603b69b215c', '国铁 G5602 · 福田', 'G5602',
-  '福田', 'Futian', '到站', '到站广播 · 中英',
-  '2025 年车内实录的普通话和英文片段。可改站名，保留脚下安全提示。', '2820'),
-
- JR('yamanote', 'ffffffffffffffffffffffffffffffff', '山手線', 'JY', '#9acd32', '品川・渋谷方面',
-  [row('目黒', 'めぐろ', 'Meguro', 'JY 22', '東急目黒線、地下鉄南北線、都営地下鉄三田線', 'the Tokyu Meguro Line, the Namboku Subway Line, and the Mita Subway Line'), row('五反田', 'ごたんだ', 'Gotanda', 'JY 23')],
-  'E235 现行车内广播（目黒站前），清晰。可替换站名、车站编号、换乘；录音里没有念线路名。', {sub: 'E235 现行广播'}),
- JR('chuo', 'f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1', '中央線快速', 'JC', '#f15a22', '四ツ谷・東京方面',
-  [row('新宿', 'しんじゅく', 'Shinjuku', 'JC 05', '代々木、千駄ケ谷、信濃町へおいでのお客様と、山手線、埼京線、湘南新宿ライン、小田急線、京王線、地下鉄丸ノ内線、都営地下鉄新宿線、都営地下鉄大江戸線', 'the Chuo Line local service, the Yamanote Line, the Saikyo Line, the Shonan-Shinjuku Line, the Odakyu Line, the Keio Line, the Marunouchi Subway Line, the Shinjuku Subway Line, and the Oedo Subway Line'), row('四ツ谷', 'よつや', 'Yotsuya', 'JC 04')],
-  '车内自动广播（新宿到站前），很清晰。可替换站名、编号、再下一站、换乘。', {sub: 'E233 自动广播'}),
- JR('sobu', 'cae9e0662bf94ae41a5da3c2c1e50892', '総武快速線', 'JO', '#0067c0', '千葉・成田空港方面',
-  [row('錦糸町', 'きんしちょう', 'Kinshicho', 'JO 22', '亀戸・平井へおいでのお客様と、地下鉄半蔵門線', 'the Sobu Line local service and the Hanzomon Subway Line'), row('新小岩', 'しんこいわ', 'Shin-Koiwa', 'JO 23')],
-  '车内广播（錦糸町站前），清晰。可替换站名、编号、再下一站、换乘。', {sub: 'E235 广播'}),
- JR('keiyo', '55e540aa82543448a2360c58e7692359', '京葉線', 'JE', '#c9242f', '東京方面',
-  [row('葛西臨海公園', '葛西臨海公園', 'Kasai-Rinkai Park', 'JE 06'), row('新木場', 'しんきば', 'Shin-Kiba', 'JE 05')],
-  '车内广播（舞浜→葛西臨海公園），清晰。可替换线路名、终点、站名、编号。', {sub: '可换线路名和终点', terminal: '東京'}),
- JR('tokaido', '7548577c27ebf1a913f148f41f74efc4', '東海道線', 'JT', '#f68b1e', '横浜・小田原方面',
-  [row('横浜', 'よこはま', 'Yokohama', 'JT 05'), row('戸塚', 'とつか', 'Totsuka', 'JT 06')],
-  '普通列车车内广播（横浜站前），很清晰。可替换站名、编号。', {sub: '很清晰'}),
- JR('takasaki', 'bdc2617d2fba3d1dc453d5aa18aa360c', '高崎線', 'JU', '#f68b1e', '大宮・高崎方面',
-  [row('浦和', 'うらわ', 'Urawa', 'JU 05'), row('さいたま新都心', 'さいたましんとしん', 'Saitama-Shintoshin', 'JU 06')],
-  '车内广播（浦和站前），很清晰。可替换站名、编号。', {sub: '很清晰'}),
- JR('utsunomiya', '25e42318af4f221fd284342d2966e8b7', '宇都宮線', 'JU', '#f68b1e', '上野・東京方面',
-  [row('東大宮', 'ひがしおおみや', 'Higashi-Omiya'), row('土呂', 'とろ', 'Toro')],
-  '车内广播（東大宮站前），清晰。可替换站名。', {sub: '清晰'}),
-
-];
+// row、JR、CR、routes 定义在 routes.js
 const KINDS = ['JR 全线原声', '公交', '地铁', '铁路', '高铁', '巴士'];
 const known = {巴黎: ['パリ', 'Paris'], 东京: ['東京', 'Tokyo'], 上海: ['上海', 'Shanghai'], 伦敦: ['ロンドン', 'London'], 大阪: ['大阪', 'Osaka'], 北京: ['北京', 'Beijing'], 新宿: ['しんじゅく', 'Shinjuku'], 涩谷: ['しぶや', 'Shibuya'], 渋谷: ['しぶや', 'Shibuya'], 品川: ['しながわ', 'Shinagawa'], 人民广场: ['人民広場', "People's Square"], 浦东机场: ['浦東空港', 'Pudong Airport'], 虹桥枢纽: ['虹橋', 'Hongqiao Hub'], 北京南: ['北京南', 'Beijing South'], 浅草: ['あさくさ', 'Asakusa'], 新大阪: ['しんおおさか', 'Shin-Osaka'], 成田空港: ['なりたくうこう', 'Narita Airport'], 東京: ['とうきょう', 'Tokyo'], 横浜: ['よこはま', 'Yokohama'], 上野: ['うえの', 'Ueno'], パリ: ['パリ', 'Paris'], ロンドン: ['ロンドン', 'London']};
 const TYPES = {
@@ -121,7 +73,9 @@ function jreRoutes() {
   note: `JR 东日本 ${run.line}（${run.remarks || run.direction}，车次 ${run.id.split('/').pop()}）全线原声。录音由铁道爱好者录制，版权归 JR 东日本，仅供个人使用；数据来自 pids-jre-simulator（MIT 授权）。`,
  }));
 }
-function allRoutes() { return routes.concat(jreRoutes(), importedRoutes()) }
+// 改编页只列能替换的单段原声；JR 全线原声在原声页播放（jreRoutes 保留，以后标好替换位置再接入）
+const EDIT_JRE = false;
+function allRoutes() { return routes.concat(EDIT_JRE ? jreRoutes() : [], importedRoutes()) }
 function baseRoute(key) { return allRoutes().find(r => r.key === key) }
 function presetOf(key) { return S.presets.find(p => p.key === key && baseRoute(p.base)) }
 /** 当前选择：内置线路、导入录音，或“我的线路”（基于某条线路 + 自己的设置） */
@@ -195,7 +149,7 @@ const narrowLayout = matchMedia('(max-width: 720px)');
 function sizeRoutePicker() { $('routePanel').open = !narrowLayout.matches }
 sizeRoutePicker();
 narrowLayout.addEventListener('change', sizeRoutePicker);
-const cities = ['全部', 'JR', '上海', '东京', '国铁'];
+const cities = ['全部', '上海', '东京', '国铁'];
 $('cityChips').innerHTML = cities.map(c => `<button class="chip" type="button" data-city="${c}">${c}</button>`).join('');
 function renderRoutes() { if (!cities.includes(S.city)) S.city = '全部';
  $('activeRoute').textContent = routeTitle();
@@ -776,6 +730,31 @@ $('importDelete').onclick = async () => {
  try { await api(`/api/projects/${r.pid}`, {method: 'DELETE'}); projects = projects.filter(p => p.id !== r.pid); choose('bus510') } catch (e) { $('importStatus').textContent = e.message }
 };
 
+/* ---------- 选择改编的基础 ---------- */
+function replaceable(r) {
+ const p = projects.find(x => x.id === r.pid);
+ const fields = [...new Set((p?.markers || []).map(m => m.field || 'station'))];
+ return fields.map(f => FIELD_NAMES[f] || f).join('、');
+}
+function baseCard(r, extra = '') {
+ const what = replaceable(r);
+ return `<button type="button" class="base-card" data-key="${esc(r.key)}" style="--rc:${esc(r.color)}">
+  <span class="code">${esc(r.code)}</span><span class="base-name">${esc(r.name)}<small>${esc(extra || r.sub || r.kind || '')}</small>
+  <small class="base-fields">${what ? '可改：' + esc(what) : '只能试听，还没有可替换的位置'}</small></span></button>`;
+}
+function showPicker(on) {
+ $('basePicker').hidden = !on; $('editorLayout').hidden = on;
+ if (!on) return;
+ stop();
+ const mine = S.presets.filter(p => baseRoute(p.base));
+ $('myBaseTitle').hidden = $('myBaseGrid').hidden = !mine.length;
+ $('myBaseGrid').innerHTML = mine.map(p => { const b = baseRoute(p.base), pr = S.profiles[p.key] || {}; return baseCard({...b, key: p.key, name: p.name, code: pr.code || b.code, color: pr.color || b.color}, '基于 ' + b.name) }).join('');
+ $('baseGrid').innerHTML = allRoutes().filter(r => projects.some(p => p.id === r.pid)).map(r => baseCard(r)).join('');
+ scrollTo(0, 0);
+}
+$('basePicker').onclick = e => { const b = e.target.closest('[data-key]'); if (!b) return; showPicker(false); choose(b.dataset.key); $('routeTitle').focus({preventScroll: true}) };
+$('changeBase').onclick = () => showPicker(true);
+
 /* ---------- 启动 ---------- */
 (async () => {
  jreRuns = await api('/api/jre/routes').catch(() => []);
@@ -793,4 +772,5 @@ $('importDelete').onclick = async () => {
  if (!presetOf(S.selected) && !baseRoute(S.selected)) S.selected = 'bus510';
  lcdSettings();
  choose(S.selected);
+ showPicker(true);  // 改编页一打开先选基础
 })();
