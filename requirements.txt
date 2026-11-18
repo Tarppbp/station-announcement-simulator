@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+numpy
+soundfile
+pypinyin
+fugashi[unidic-lite]

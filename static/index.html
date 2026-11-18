@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>报站模拟器</title>
+<link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+<body>
+<header class="topbar">
+ <div class="topbar-inner">
+ <a href="#workstation" class="brand"><span class="brand-icon" aria-hidden="true"></span>报站模拟器</a>
+ <nav class="top-links" aria-label="页面导航"><a href="#workstation">报站台</a><a href="#otherBroadcasts" id="otherLink" hidden>其他广播</a></nav>
+ <div class="player" id="player" data-state="idle">
+  <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span class="player-title" id="nowPlaying" aria-live="polite">未在播放</span>
+  <button class="icon" id="pausePlay" type="button" aria-label="暂停" hidden><i class="pause-icon" aria-hidden="true"></i><span>暂停</span></button>
+  <button class="icon" id="resumePlay" type="button" aria-label="继续" hidden><i class="play-icon" aria-hidden="true"></i><span>继续</span></button>
+  <button class="icon" id="stopPlay" type="button" aria-label="停止" hidden><i class="stop-icon" aria-hidden="true"></i><span>停止</span></button>
+ </div>
+ </div>
+</header>
+
+<main class="layout">
+ <!-- ============ 左栏：线路 ============ -->
+ <aside class="col routes-col">
+  <details class="card route-panel" id="routePanel" open>
+   <summary><span>线路</span><span id="activeRoute" class="active-route"></span></summary>
+   <div class="route-filters">
+    <input id="routeSearch" class="search" placeholder="搜索线路" type="search" aria-label="搜索线路">
+    <div class="chips" id="cityChips" role="group" aria-label="按地区筛选线路"></div>
+   </div>
+   <div class="route-list" id="routeList" aria-label="可选线路"></div>
+  </details>
+ </aside>
+
+ <!-- ============ 中栏：显示牌 + 报站 ============ -->
+ <section class="col main-col" id="workstation" aria-label="报站台">
+  <section class="station-board" id="stationBoard" aria-label="车厢下一站屏">
+   <header class="board-header">
+    <span id="boardCode" class="line-code"></span>
+    <strong id="boardLine"></strong>
+    <span class="service-type" id="boardType1"></span>
+    <span id="boardDirection" class="board-direction"></span>
+   </header>
+   <div class="board-next">
+    <div class="board-next-label"><span id="boardStationLabel">下一站</span><span id="boardStationLabelEn" lang="en">Next stop</span></div>
+    <div class="board-next-name">
+     <span id="boardStationNo" class="line-code" hidden></span>
+     <div class="board-station-text"><strong id="boardStationName"></strong><span id="boardStationEn" lang="en" hidden></span></div>
+    </div>
+   </div>
+   <ol class="board-stops" id="boardStops" aria-label="停靠站顺序" hidden></ol>
+  </section>
+
+  <div class="workbench">
+  <section class="card composer" id="announcement" aria-labelledby="routeTitle">
+   <div class="card-head"><h1 id="routeTitle" tabindex="-1">报站</h1><span class="tag" id="routeTag"></span></div>
+
+   <div class="now-station">
+    <div class="station-toolbar">
+     <label for="stationName" id="stationNameLabel">下一站</label>
+     <div class="station-nav" aria-label="切换站点">
+      <button class="nav" id="previousStation" aria-label="上一站" title="上一站">‹</button>
+      <span id="stationPosition" class="station-position"></span>
+      <button class="nav" id="nextStation" aria-label="下一站" title="下一站">›</button>
+     </div>
+    </div>
+    <div class="place-input">
+     <input id="stationName" class="big-input" maxlength="50" placeholder="输入站名" autocomplete="off">
+     <button class="ghost" type="button" id="translatePlace">翻译地名</button>
+    </div>
+     <div id="placeResults" class="place-results" hidden aria-live="polite"><div id="placeMessage"></div><div id="placeChoices"></div><p class="note">地名数据：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> / <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a></p></div>
+   </div>
+
+   <div class="actions main-actions">
+    <button class="primary big" id="generate" disabled aria-keyshortcuts="Control+Enter"><i class="play-icon" aria-hidden="true"></i><span id="generateLabel">替换并播放</span></button>
+    <button class="ghost" id="playOriginal" disabled>试听原声</button>
+   </div>
+   <div class="progress" id="progressBox" hidden role="status"><div class="bar" aria-hidden="true"><i id="progressBar"></i></div><span id="progress"></span></div>
+   <div class="actions result-actions" id="resultActions" hidden>
+    <button class="secondary" id="playResult" disabled>重播</button>
+    <button class="ghost" id="retake" hidden>换一种读法</button>
+    <a id="download" class="ghost" hidden download="报站.wav">保存音频</a>
+   </div>
+   <p class="note" id="sourceStatus" role="status"></p>
+   <details class="fold" id="readingsFold">
+    <summary>读音与译名</summary>
+    <div class="readings" id="readings">
+      <label id="jnLabel">日文写法<input id="jpName" maxlength="40"></label>
+      <label id="jaLabel">日文读音<input id="jaName" maxlength="40"></label>
+      <label id="enLabel">英文<input id="enName" maxlength="60"></label>
+      <label id="numberLabel">车站编号<input id="stationNo" maxlength="12" placeholder="如 JY 22"></label>
+    </div>
+   </details>
+
+   <details class="fold" id="editFold">
+    <summary>广播设置</summary>
+    <div class="grid2 line-row">
+     <label id="lineLabel">线路名<input id="lineName" maxlength="20" placeholder="例如：M1路"></label>
+     <label id="terminalLabel">终点站<input id="terminal" maxlength="30" placeholder="例如：人民广场"></label>
+    </div>
+    <p class="note" id="lineNote"></p>
+    <p class="note" id="routeNote"></p>
+    <a class="source-link" id="routeSource" target="_blank" rel="noopener" hidden>录音来源 ↗</a>
+    <p class="note" id="editHint"></p>
+    <ul class="edit-list" id="editList"></ul>
+    <label id="doorLabel" hidden>开门方向<select id="doorSide"><option value="original">保留原录音</option><option value="left">左侧开门</option><option value="right">右侧开门</option></select></label>
+    <div id="customArea" hidden>
+     <p class="note">还想修改其他句子？填写录音里原来的话和你想说的话。程序会尝试自动定位，生成后请试听。</p>
+     <div id="customRows"></div>
+     <button class="ghost small" id="addCustom" type="button">＋ 添加要修改的话</button>
+    </div>
+   </details>
+
+   <details class="fold" id="stationsFold">
+    <summary>站点表 <span class="count" id="stationCount"></span></summary>
+    <p class="note">点一行切换到该站。只填中文站名就行：日文写法（汉字或片假名）、读音、英文会自动生成（灰色字），填了就用你填的。“再下一站”自动取下一行。</p>
+    <div class="table-wrap"><table class="stations" id="stationTable">
+     <thead><tr><th>#</th><th>站名</th><th class="c-jn">日文写法</th><th class="c-ja">读音</th><th class="c-en">英文</th><th class="c-no">编号</th><th></th></tr></thead>
+     <tbody></tbody>
+    </table></div>
+    <div class="actions"><button class="secondary" id="addStation">＋ 添加站点</button><button class="ghost" id="pasteStations">批量粘贴</button><button class="ghost" id="reverseStations">反向</button><button class="ghost" id="clearStations">清空</button></div>
+    <div id="pasteBox" hidden><textarea id="pasteText" rows="5" placeholder="每行一个站，可用逗号分隔读法：&#10;巴黎,パリ,Paris&#10;伦敦,ロンドン,London"></textarea><div class="actions"><button class="primary" id="pasteApply">替换站点表</button><button class="ghost" id="pasteCancel">取消</button></div></div>
+   </details>
+
+   <details class="fold" id="extraFold">
+    <summary>再下一站和换乘</summary>
+    <div id="next2Box" class="grid2"><label>再下一站（日文）<input id="next2Ja" maxlength="30" placeholder="自动取下一行"></label><label>再下一站（英文）<input id="next2En" maxlength="40" placeholder="自动取下一行"></label></div>
+    <div id="transferBox"><div class="grid2"><label>换乘（日文）<input id="transferJa" maxlength="120"></label><label>换乘（英文）<input id="transferEn" maxlength="200"></label></div><p class="note">换乘内容跟着当前站保存。保持原文则保留录音中的换乘广播。</p></div>
+   </details>
+  </section>
+
+ <!-- ============ 右栏：显示牌与自定义 ============ -->
+ <aside class="col side-col" aria-label="线路工具">
+  <details class="card tool-panel" id="presetFold">
+   <summary>我的线路</summary>
+   <label class="full">名称<input id="presetName" maxlength="30" placeholder="例如：我的通勤线"></label>
+   <div class="actions"><button class="primary" id="savePreset">保存为我的线路</button><button class="ghost" id="deletePreset" hidden>删除这条</button></div>
+  </details>
+
+  <details class="card tool-panel" id="boardFold">
+   <summary>车厢屏设置</summary>
+   <div class="grid2">
+    <label>车种<select id="type1"></select></label>
+    <div class="field">线路标识色
+     <div class="color-pick">
+      <button type="button" class="color-btn" id="colorBtn"><i id="colorChip"></i><span id="colorName">黄绿</span><b>▾</b></button>
+      <div class="color-pop" id="colorPop" hidden>
+       <div class="swatches" id="swatches"></div>
+       <label class="color-custom">自定义颜色……<input id="lineColor" type="color" value="#9acd32"></label>
+      </div>
+     </div>
+    </div>
+    <label>线路代码<input id="lineCode" maxlength="5" placeholder="随线路名自动"></label>
+    <label>显示牌另写名称<input id="boardLineName" maxlength="20" placeholder="不填则同线路名"></label>
+   </div>
+   <label class="full">方向<input id="direction" maxlength="30"></label>
+  </details>
+
+   <details class="card tool-panel" id="importBox">
+    <summary>导入原声录音</summary>
+    <p class="note">选择原声文件即可试听。填写原话可尝试识别替换位置。</p>
+    <label class="full">录音文件<input id="importFile" type="file" accept="audio/*,video/*"></label>
+    <label class="full">播报语言<select id="importLocale"><option value="ZH">普通话</option><option value="JA">日语</option><option value="EN">英语</option></select></label>
+    <label class="full">起个名字<input id="importName" maxlength="30" placeholder="例如：上海地铁 2 号线"></label>
+    <div class="grid2"><label>录音里的线路名（可不填）<input id="importLine" maxlength="20" placeholder="2号线"></label><label>录音里的终点站（可不填）<input id="importTerminal" maxlength="30" placeholder="浦东国际机场"></label></div>
+    <div class="grid2"><label>录音里的站名（可不填）<input id="importStation" maxlength="30" placeholder="人民广场"></label><label>英文站名（可不填）<input id="importStationEn" maxlength="60" placeholder="People's Square"></label></div>
+    <div class="actions"><button id="importGo" class="primary">导入录音</button><button id="importDelete" class="ghost" hidden>删除这段录音</button></div>
+    <p id="importStatus" class="note"></p>
+   </details>
+   <button class="ghost reset-route" id="resetRoute">还原线路设置</button>
+ </aside>
+ </div>
+
+ <section class="card" id="otherBroadcasts" aria-labelledby="otherTitle" hidden>
+   <div class="card-head"><h2 id="otherTitle">其他广播</h2></div>
+   <div class="sound-grid">
+    <div class="sound"><label for="melody" class="sound-head">发车音乐 <span class="tag real">原声</span></label><select id="melody"><option value="JRE-IKST-025-01.mp3">JRE-IKST-025-01</option><option value="JRE-IKST-025-02.mp3">JRE-IKST-025-02</option><option value="JR-SH1-1_old.mp3">JR-SH1-1（旧版）</option></select><button class="secondary" id="playMelody"><i class="play-icon" aria-hidden="true"></i>播放</button></div>
+    <div class="sound"><label for="busNotice" class="sound-head">上海公交提示 <span class="tag real">原声</span></label><select id="busNotice"><option value="bus-turn.mp3">车辆转弯，请拉好扶手</option><option value="bus-seat.mp3">请给需要帮助的乘客让座</option><option value="bus-safety.mp3">请勿携带易燃物品</option></select><button class="secondary" id="playNotice"><i class="play-icon" aria-hidden="true"></i>播放</button></div>
+   </div>
+ </section>
+ </section>
+</main>
+<audio id="audio" hidden></audio>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="/static/app.js?v=4"></script>
+<script src="/static/cloud.js?v=4"></script>
+</body>
+</html>
