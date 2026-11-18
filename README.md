@@ -38,6 +38,11 @@ python -m venv .venv
 
 公开仓库提供程序和线路显示模板。第三方录音、模型权重及个人设置由使用者留在本机。请使用有权使用和处理的录音。
 
+## 原声版和完整版
+
+- `http://127.0.0.1:8899/` 是**原声版**（`static/original.html`、`original.js`、`original.css`）：只播放 JR 全线原声，按线路和种别选择车次，可切换上一站、下一站，显示屏跟着变化。不做替换，也不用 AI。需要先配置下面的 `jre_dir`。
+- `http://127.0.0.1:8899/full` 是**完整版**（`static/index.html`、`app.js`）：可自定义线路、站点、显示屏，以及用 AI 生成替换站名。
+
 ### JR 全线原声（可选）
 
 如已在本机配置可使用的 [pids-jre-simulator](https://github.com/ksleungac/pids-jre-simulator) 素材，填写 `local-config.json` 中的 `jre_dir`，指向包含 `audio` 和 `data` 的目录。重启后从「JR 全线原声」选择车次。站点表按运行图显示，通过站标灰，播放可手动推进或连续运行。车厢屏会显示车种颜色、车站编号和双语换乘信息。

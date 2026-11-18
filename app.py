@@ -20,7 +20,7 @@ app = FastAPI()
 async def no_stale_pages(request, call_next):
     # 网页文件每次都向服务确认是否有更新，改了 static/ 下的文件刷新就能看到
     response = await call_next(request)
-    if request.url.path == '/' or request.url.path.startswith('/static/'):
+    if request.url.path in ('/', '/full') or request.url.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'no-cache'
     return response
 
@@ -288,8 +288,12 @@ def _tmp(folder, tag, clip):
 
 
 # ---------------------------------------------------------------- API
+# 默认打开原声版（只放原声、切换站点）；完整版（自定义、AI 生成替换）在 /full
 @app.get('/')
-def home(): return FileResponse(ROOT/'static'/'index.html')
+def home(): return FileResponse(ROOT/'static'/'original.html')
+
+@app.get('/full')
+def full(): return FileResponse(ROOT/'static'/'index.html')
 
 @app.get('/api/projects')
 def projects():

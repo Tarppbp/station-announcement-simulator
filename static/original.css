@@ -1,0 +1,113 @@
+/* 报站模拟器 · 原声版。显示屏画面样式在 lcd.css */
+:root {
+  color-scheme: light dark;
+  --bg: #f4f4f6; --card: #fff; --ink: #18181b; --muted: #5a5a63; --line: #dcdce1; --soft: #f0f0f3;
+  --accent: #18181b; --accent-ink: #fff; --radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", "Yu Gothic UI", sans-serif;
+  color: var(--ink);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111113; --card: #1b1b1e; --ink: #f2f2f4; --muted: #b9b9c2; --line: #38383f; --soft: #242428;
+    --accent: #f2f2f4; --accent-ink: #18181b;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); font-size: 14px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: default; opacity: .45; }
+:where(button, a):focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; }
+h2 { margin: 0 0 10px; font-size: 15px; font-weight: 800; }
+code { font-size: 12px; }
+
+/* 顶栏和播放条 */
+.o-top { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--line); }
+.o-top-inner { max-width: 1400px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 16px; }
+.o-brand { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; white-space: nowrap; }
+.o-brand small { font-size: 12px; font-weight: 700; color: var(--muted); padding: 2px 7px; border: 1px solid var(--line); border-radius: 99px; }
+.o-brand-icon { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); position: relative; }
+.o-brand-icon::after { content: ""; position: absolute; inset: 7px 6px 9px; border: 2px solid var(--accent-ink); border-radius: 3px; }
+.o-player { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 5px 6px 5px 12px; background: var(--soft); border: 1px solid var(--line); border-radius: 10px; }
+.o-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 650; max-width: 42vw; }
+.o-player button { border: 1px solid var(--line); background: var(--card); border-radius: 7px; padding: 4px 10px; font-size: 13px; min-height: 30px; }
+.o-eq { display: flex; align-items: end; gap: 2px; height: 14px; }
+.o-eq i { width: 3px; height: 4px; background: var(--muted); border-radius: 1px; }
+.o-player[data-state="playing"] .o-eq i { animation: o-eq .9s ease-in-out infinite; background: var(--accent); }
+.o-player[data-state="playing"] .o-eq i:nth-child(2) { animation-delay: .2s; }
+.o-player[data-state="playing"] .o-eq i:nth-child(3) { animation-delay: .4s; }
+@keyframes o-eq { 50% { height: 14px } }
+.o-full-link { color: var(--muted); font-size: 13px; font-weight: 650; text-decoration: none; white-space: nowrap; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.o-full-link:hover { color: var(--ink); border-color: var(--ink); }
+
+/* 布局 */
+.o-main { max-width: 1400px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 20px; align-items: start; }
+.o-lines, .o-stops-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.o-lines { position: sticky; top: 72px; }
+.o-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+/* 线路 */
+.o-line-list { display: grid; gap: 4px; }
+.o-line { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 7px; border: 1px solid transparent; border-radius: 9px; background: transparent; }
+.o-line:hover { background: var(--soft); }
+.o-line.on { background: var(--soft); border-color: var(--line); }
+.o-badge { display: grid; place-items: center; height: 36px; border: 4px solid var(--c); border-radius: 7px; background: #fff; color: #111; font: 800 14px/1 "Segoe UI", Arial, sans-serif; }
+.o-line-name { min-width: 0; font-size: 15px; font-weight: 800; }
+.o-line-name small { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
+
+/* 种别 */
+.o-stage { min-width: 0; display: grid; gap: 12px; }
+.o-service { display: flex; flex-wrap: wrap; gap: 8px; }
+.o-service-btn { display: grid; gap: 2px; text-align: left; padding: 8px 14px 8px 12px; border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 9px; background: var(--card); min-width: 150px; }
+.o-service-btn b { font-size: 15px; }
+.o-service-btn small { color: var(--muted); font-size: 11.5px; }
+.o-service-btn.on { border-color: var(--c); box-shadow: 0 0 0 1px var(--c) inset; background: color-mix(in srgb, var(--c) 9%, var(--card)); }
+
+/* 操作按钮 */
+.o-controls { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; }
+.o-controls-2 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.o-spacer { flex: 1; }
+.o-nav, .o-primary, .o-ghost { border-radius: 10px; font-weight: 750; }
+.o-nav { min-height: 54px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+.o-nav:hover:not(:disabled) { border-color: var(--ink); }
+.o-primary { min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 16px; }
+.o-primary:hover:not(:disabled) { opacity: .88; }
+.o-play { width: 0; height: 0; border-block: 7px solid transparent; border-left: 11px solid currentColor; }
+.o-ghost { min-height: 36px; padding: 6px 13px; border: 1px solid var(--line); background: var(--card); font-size: 13px; }
+.o-ghost:hover:not(:disabled) { border-color: var(--ink); }
+.o-ghost[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.o-status { margin: 0; font-size: 14px; font-weight: 650; }
+.o-keys { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+
+/* 停靠站 */
+.o-count { margin-left: 4px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.o-stops { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+.o-stop button { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 9px; align-items: center; text-align: left; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.o-stop button:hover:not(:disabled) { border-color: var(--ink); }
+.o-no { grid-row: span 2; min-width: 44px; padding: 3px 4px; border-radius: 5px; background: var(--soft); text-align: center; font: 700 12px/1.2 "Segoe UI", Arial, sans-serif; }
+.o-name { font-size: 15px; font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
+.o-stop small { color: var(--muted); font-size: 11px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.o-stop { position: relative; }
+.o-stop em { position: absolute; right: 8px; top: 7px; font-style: normal; font-size: 11px; color: var(--muted); }
+.o-stop.past button { color: var(--muted); }
+.o-stop.current button { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) inset; background: var(--soft); }
+.o-stop.pass button { opacity: .5; }
+
+.o-empty { max-width: 640px; margin: 60px auto; padding: 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); line-height: 1.7; }
+.o-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 13px; }
+
+@media (max-width: 860px) {
+  .o-main { grid-template-columns: 1fr; padding: 12px 16px; }
+  .o-lines { position: static; }
+  .o-line-list { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .o-top-inner { padding: 8px 16px; gap: 10px; flex-wrap: wrap; }
+  .o-player { order: 3; flex-basis: 100%; margin-left: 0; }
+  .o-now { max-width: none; flex: 1; }
+  .o-full-link { margin-left: auto; }
+}
+@media (max-width: 520px) {
+  .o-controls { grid-template-columns: 1fr 1fr; }
+  .o-primary { grid-column: 1 / -1; order: -1; }
+  .o-service-btn { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .o-player[data-state="playing"] .o-eq i { animation: none; height: 10px; } }

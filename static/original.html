@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>报站模拟器 · 原声版</title>
+<link rel="stylesheet" href="/static/lcd.css?v=4">
+<link rel="stylesheet" href="/static/original.css?v=1">
+</head>
+<body>
+<header class="o-top">
+ <div class="o-top-inner">
+  <span class="o-brand"><span class="o-brand-icon" aria-hidden="true"></span>报站模拟器<small>原声版</small></span>
+  <div class="o-player" id="player" data-state="idle">
+   <span class="o-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+   <span class="o-now" id="nowPlaying" aria-live="polite">未在播放</span>
+   <button type="button" id="pausePlay" hidden>暂停</button>
+   <button type="button" id="resumePlay" hidden>继续</button>
+   <button type="button" id="stopPlay" hidden>停止</button>
+  </div>
+  <a class="o-full-link" href="/full" title="可自定义线路、AI 生成替换的完整版">完整版</a>
+ </div>
+</header>
+
+<main class="o-main">
+ <aside class="o-lines" aria-labelledby="linesTitle">
+  <h2 id="linesTitle">线路</h2>
+  <div class="o-line-list" id="lineList"></div>
+  <p class="o-note">JR 东日本全线原声，由铁道爱好者在车内和站台录制。版权归 JR 东日本，仅供个人使用。</p>
+ </aside>
+
+ <section class="o-stage" aria-label="报站">
+  <div class="o-service" id="serviceTabs" role="group" aria-label="种别"></div>
+  <div id="lcdFrame"></div>
+
+  <div class="o-controls">
+   <button type="button" class="o-nav" id="prevStation" title="上一站（Alt+←）"><span aria-hidden="true">‹</span> 上一站</button>
+   <button type="button" class="o-primary" id="depart" aria-keyshortcuts="PageDown"><i class="o-play" aria-hidden="true"></i><span id="departLabel">发车</span></button>
+   <button type="button" class="o-nav" id="nextStation" title="下一站（Alt+→）">下一站 <span aria-hidden="true">›</span></button>
+  </div>
+  <div class="o-controls o-controls-2">
+   <button type="button" class="o-ghost" id="melody" aria-keyshortcuts="PageUp">发车音乐</button>
+   <button type="button" class="o-ghost" id="autoRun" aria-pressed="false">连续运行</button>
+   <button type="button" class="o-ghost" id="restart">回到始发站</button>
+   <span class="o-spacer"></span>
+   <button type="button" class="o-ghost" id="lcdFull">全屏</button>
+   <button type="button" class="o-ghost" id="lcdWindow">单独窗口</button>
+  </div>
+  <p class="o-status" id="status" role="status"></p>
+  <p class="o-keys">快捷键：Page Down 发车 / 下一段广播，Page Up 发车音乐，End 暂停 / 继续，Alt+← / Alt+→ 上一站 / 下一站。</p>
+
+  <section class="o-stops-card" aria-labelledby="stopsTitle">
+   <h2 id="stopsTitle">停靠站 <span class="o-count" id="stopCount"></span></h2>
+   <p class="o-note">点一站直接跳到该站。灰色是这一种别不停的通过站。</p>
+   <ol class="o-stops" id="stopList"></ol>
+  </section>
+ </section>
+</main>
+<p class="o-empty" id="empty" hidden>没有找到 JR 全线原声。请在 <code>local-config.json</code> 中填写 <code>jre_dir</code>，指向本机的 pids-jre-simulator 文件夹，然后重启模拟器。</p>
+<audio id="audio" hidden></audio>
+<div class="o-toast" id="toast" role="status" hidden></div>
+<script src="/static/lcd.js?v=4"></script>
+<script src="/static/original.js?v=1"></script>
+</body>
+</html>
