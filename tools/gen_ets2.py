@@ -13,8 +13,12 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 API = 'http://127.0.0.1:8899'
 BASES = {
-    'bus510': ('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', lambda c: {'station': {'ZH': c['zh'], 'WU': c['zh'], 'EN': c['en']}}),
-    'utsunomiya': ('25e42318af4f221fd284342d2966e8b7', lambda c: {'station': {'JA': c['ja'], 'EN': c['en']}}),
+    # 510 路的录音会念线路名和终点：换成这个国家的线路（如「德意志特快」）和首都
+    'bus510': ('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', lambda n, c: {'station': {'ZH': c['zh'], 'WU': c['zh'], 'EN': c['en']},
+                                                              'line': {'ZH': n['line']['zh'], 'WU': n['line']['zh']},
+                                                              'terminal': {'ZH': n['line']['terminal'], 'WU': n['line']['terminal']}}),
+    # 宇都宫线的录音只念站名（日语、英语），线路名只在显示屏上换
+    'utsunomiya': ('25e42318af4f221fd284342d2966e8b7', lambda n, c: {'station': {'JA': c['ja'], 'EN': c['en']}}),
 }
 OUT = ROOT/'data'/'ets2'/'manifest.json'
 
@@ -49,7 +53,7 @@ def main():
                 n += 1
                 t0 = time.time()
                 try:
-                    state = generate(pid, make(city), f"欧陆巡游 · {city['zh']}")
+                    state = generate(pid, make(country, city), f"欧陆巡游 · {country['line']['zh']} · {city['zh']}")
                     done.setdefault(key, {})[base] = {'url': state['url'].split('?')[0], 'warn': bool(state.get('warn'))}
                     print(f"[{n}/{total}] {country['zh']} {city['zh']} {base} {'（自动检查有提醒）' if state.get('warn') else ''} {time.time() - t0:.0f}s", flush=True)
                 except Exception as e:

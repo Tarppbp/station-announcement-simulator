@@ -31,8 +31,8 @@ function renderBases() {
 function renderCountries() {
  $('countryList').innerHTML = countries.map(c => {
   const ready = c.cities.filter(x => sound(c, x)).length;
-  return `<button type="button" class="t-country ${c.id === S.country ? 'on' : ''}" aria-pressed="${c.id === S.country}" data-country="${c.id}">
-   <span class="t-flag" aria-hidden="true">${c.flag}</span><span><b>${esc(c.zh)}</b><small>${esc(c.local)} · ${ready} / ${c.cities.length} 城已生成</small></span></button>`;
+  return `<button type="button" class="t-country ${c.id === S.country ? 'on' : ''}" aria-pressed="${c.id === S.country}" data-country="${c.id}" style="--c:${esc(c.line.color)}">
+   <span class="o-badge">${esc(c.line.code)}</span><span><b>${esc(c.line.zh)}</b><small>${esc(c.zh)} · ${ready} / ${c.cities.length} 城已生成</small></span></button>`;
  }).join('');
 }
 function renderCities() {
@@ -54,8 +54,9 @@ function draw() {
  const b = base(), c = country(), x = city(); if (!b || !c || !x) return;
  const ja = b.city === 'ja', count = 6, start = Math.max(0, Math.min(S.idx - 1, c.cities.length - count));
  data = {
-  city: b.city, line: b.line, code: b.code, color: b.color, type: '', mark: '', typeColor: '',
-  dest: `${c.flag} ${ja ? c.ja : c.zh}`, phase: S.phase,
+  // 显示屏按目的国家显示线路：线路名、国家代码和颜色（例如「DE 德意志特快」），终点为首都；底下的原声只决定声音
+  city: b.city, line: ja ? c.line.ja : c.line.zh, code: c.line.code, color: c.line.color, type: '', mark: '', typeColor: '',
+  dest: ja ? `${c.line.terminal_ja}行` : `终点 ${c.line.terminal}`, phase: S.phase,
   station: {zh: x.zh, jname: ja ? x.ja : '', kana: '', en: x.en, no: '', code3: ''},
   stops: c.cities.slice(start, start + count).map((y, i) => ({name: ja ? y.ja : y.zh, no: '', pass: false, state: start + i < S.idx ? 'past' : start + i === S.idx ? 'current' : 'next'})),
   transfer: {main: '', en: '', list: []}, door: '', speed: 3, langs: {kana: false, en: true, zh: ja},
@@ -63,8 +64,8 @@ function draw() {
  lcd.update(data); channel?.postMessage(data);
  try { localStorage.setItem('station-sim-lcd', JSON.stringify(data)) } catch (e) {}
  const s = sound();
- $('tourTitle').textContent = `${c.flag} ${c.zh} · ${x.zh}`;
- $('tourSub').textContent = `用「${b.name}」的原声，站名由 AI 生成。` + (x.uncertain ? '这座城市是否属于欧卡 2 本体还没核实。' : '');
+ $('tourTitle').textContent = `${c.line.zh} · ${x.zh}`;
+ $('tourSub').textContent = `${c.zh}，终点${c.line.terminal}。声音用「${b.name}」的原声，` + (b.id === 'bus510' ? '线路名、终点和站名由 AI 生成。' : '站名由 AI 生成。') + (x.uncertain ? '这座城市是否属于欧卡 2 本体还没核实。' : '');
  $('playLabel').textContent = s ? `播放「${x.zh}」` : '这座城市还没生成';
  $('playCity').disabled = !s;
  $('prevCity').disabled = S.idx <= 0; $('nextCity').disabled = S.idx >= c.cities.length - 1;
@@ -75,7 +76,7 @@ function draw() {
 if (channel) channel.onmessage = e => { if (e.data?.hello && data) channel.postMessage(data) };
 function renderAll() { renderBases(); renderCountries(); renderCities(); draw(); save(); showNotices() }
 /** 提示音跟着所选原声：510 路配上海公交提示，宇都宫线配 JR 的关门注意、停车中广播和发车音乐 */
-function showNotices() { if (typeof Notices !== 'undefined') Notices.show(S.base === 'bus510' ? ['bus'] : ['door', 'stopping', 'melody']) }
+function showNotices() { if (typeof Notices !== 'undefined') Notices.show(S.base === 'bus510' ? ['bus'] : ['door', 'stopping', 'yamanote', 'melody']) }
 
 /* ---------- 播放 ---------- */
 function setPlayer(state, title) {
@@ -93,7 +94,7 @@ function playCurrent() {
  const s = sound(), x = city(); if (!s) { if (S.auto) next(); return }
  after = () => { S.phase = 'at'; draw(); if (S.auto) setTimeout(() => S.auto && next(), 1500) };
  audio.src = s.url; S.phase = 'next'; draw();
- startPlayback(`${base().name} · ${country().zh} · ${x.zh}`);
+ startPlayback(`${country().line.zh} · ${x.zh}`);
 }
 function go(i) { const c = country(); if (!c || i < 0 || i >= c.cities.length) return; halt(); S.idx = i; S.phase = 'next'; draw(); save() }
 function next() {

@@ -20,7 +20,15 @@ BUS = [('请拉好扶手', '乘客们，车辆转弯，请拉好扶手。'), ('�
 STOPPING = {'omiya-stopping-south': '大宮 停车中（京浜東北線）', 'kozu-stopping-1-down-futsu': '国府津 停车中 1（東海道線）',
             'kozu-stopping-2-down-futsu': '国府津 停车中 2（東海道線）', 'tokyo-stopping-down-futsu': '東京 停车中（東海道線）',
             'kuroiso-stopping-up': '黒磯 停车中（宇都宮線）'}
-MELODIES = [('JRE-IKST-025-01.mp3', '发车音乐 JRE-IKST-025-01'), ('JRE-IKST-025-02.mp3', '发车音乐 JRE-IKST-025-02'), ('JR-SH1-1_old.mp3', '发车音乐 JR-SH1-1（旧版）')]
+# 名曲：static/sounds 里原有的 3 首，加上 downloads/departure-melodies/ 的 15 首（来源 github.com/MOTTERIA/departure-melodies）
+MELODIES = [('JRE-IKST-025-01.mp3', 'JRE-IKST-025-01'), ('JRE-IKST-025-02.mp3', 'JRE-IKST-025-02'), ('JR-SH1-1_old.mp3', 'JR-SH1-1（旧版）')]
+FAMOUS = [('Jupiter_verB', '《Jupiter》（木星）'), ('Twilight_V1', '《Twilight》'), ('Verde Rayo_teikyo', '《Verde Rayo》'),
+          ('JR-SH1-3_old', 'JR-SH1-3（旧版）'), ('JR-SH6-1_old', 'JR-SH6-1（旧版）'), ('JRE-IKST-038-01', 'JRE-IKST-038-01'), ('JRE-IKST-038-02', 'JRE-IKST-038-02'),
+          ('hikaritokazeto', '《光と風と》'), ('hoshizoranoshita', '《星空の下》'), ('huruiorugo-ru', '《古いオルゴール》'), ('kosumosu_V1', '《コスモス》'),
+          ('ogawanoseseragi_V1', '《小川のせせらぎ》'), ('supuringubokkusu', '《スプリングボックス》'), ('susukinokogen_V1', '《すすき野高原》'), ('eiyu', '《英雄》')]
+# 山手线名站：从运行图的发车音乐里只取音乐部分（0 秒到 sta_cut，不含关门广播）；曲名据公开资料，未逐一核对录音
+YAMANOTE = [('恵比寿', '《第三の男》（第三个人）'), ('高田馬場', '《鉄腕アトム》（铁臂阿童木）'), ('駒込', '《さくらさくら》（樱花）'),
+            ('新橋', '《鉄道唱歌》（铁道歌）'), ('渋谷', '《花の街》（花之街）'), ('新宿', ''), ('品川', ''), ('東京', ''), ('上野', ''), ('池袋', ''), ('秋葉原', '')]
 
 
 def ffmpeg(*args):
@@ -53,11 +61,27 @@ def main():
     for name, title in MELODIES:
         src = ROOT/'static'/'sounds'/name
         if src.is_file(): shutil.copyfile(src, OUT/name); melody.append({'title': title, 'text': '站台发车音乐', 'url': f'/data/notices/{name}'})
+    for name, title in FAMOUS:
+        src = ROOT/'downloads'/'departure-melodies'/f'{name}.mp3'
+        if src.is_file():
+            out = 'melody-' + name.replace(' ', '_') + '.mp3'
+            shutil.copyfile(src, OUT/out); melody.append({'title': title, 'text': '发车音乐名曲', 'url': f'/data/notices/{out}'})
+    yamanote = []
+    route = json.loads((JRE/'audio'/'yamanote'/'1208G'/'route.json').read_text(encoding='utf-8'))
+    stops = {s['name']: s for s in route['stops'] if s.get('sta')}
+    for station, tune in YAMANOTE:
+        s = stops.get(station)
+        if not s: continue
+        src = JRE/'audio'/'yamanote'/'sta'/f"{s['sta'][-1]}.mp3"
+        out = f"yamanote-{s['sta_code']}.mp3"
+        ffmpeg('-i', str(src), '-t', str(s['sta_cut']), '-af', 'afade=t=out:st=%.2f:d=0.4' % max(0, s['sta_cut'] - .4), '-ac', '1', '-b:a', '128k', str(OUT/out))
+        yamanote.append({'title': f'{station}（{s["sta_code"]}）', 'text': (tune + ' · ' if tune else '') + '山手線内回り站台发车音乐', 'url': f'/data/notices/{out}'})
     groups = [
         {'id': 'bus', 'title': '上海公交 · 车内提示', 'source': 'github.com/95xp4qk8y5-code/shanghai-bus', 'items': bus},
         {'id': 'door', 'title': 'JR · 关门注意', 'source': 'pids-jre-simulator（录音版权归 JR 东日本）', 'items': door},
         {'id': 'stopping', 'title': 'JR · 停车中广播', 'source': 'pids-jre-simulator（录音版权归 JR 东日本）', 'items': stopping},
-        {'id': 'melody', 'title': 'JR · 发车音乐', 'source': 'github.com/MOTTERIA/departure-melodies', 'items': melody},
+        {'id': 'yamanote', 'title': 'JR · 山手线名站发车音乐', 'source': 'pids-jre-simulator（录音版权归 JR 东日本）；曲名据公开资料，未逐一核对录音', 'items': yamanote},
+        {'id': 'melody', 'title': '发车音乐 · 名曲', 'source': 'github.com/MOTTERIA/departure-melodies（旋律版权归各作曲者）', 'items': melody},
     ]
     (OUT/'notices.json').write_text(json.dumps({'groups': groups}, ensure_ascii=False, indent=1), encoding='utf-8')
     print({g['id']: len(g['items']) for g in groups})

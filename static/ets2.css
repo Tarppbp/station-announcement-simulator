@@ -9,6 +9,7 @@
 .t-base:hover, .t-country:hover { background: var(--soft); }
 .t-base.on, .t-country.on { background: var(--soft); border-color: var(--line); }
 .t-flag { font-size: 26px; line-height: 1; text-align: center; }
+.t-country .o-badge { font-size: 13px; height: 32px; }
 .t-country b, .t-base b { font-size: 14.5px; }
 .t-country small, .t-base small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 500; }
 .o-stop .t-warn { position: absolute; right: 8px; bottom: 6px; font-size: 10.5px; color: var(--muted); }

@@ -1,105 +1,675 @@
 {
  "title": "欧陆巡游",
- "note": "欧洲卡车模拟 2 本体（不含地图 DLC）的国家和城市。各国城市数量参照 Truck Simulator Wiki；标 uncertain 的城市尚未逐一核实。",
+ "note": "欧洲卡车模拟 2 本体（不含地图 DLC）的国家和城市。各国城市数量参照 Truck Simulator Wiki；标 uncertain 的城市尚未逐一核实。 每个国家一条线路，用正式国名命名，终点为该国首都。",
  "countries": [
-  {"id": "de", "zh": "德国", "local": "Deutschland", "ja": "ドイツ", "en": "Germany", "flag": "🇩🇪", "cities": [
-   {"zh": "柏林", "local": "Berlin", "ja": "ベルリン", "en": "Berlin"},
-   {"zh": "不来梅", "local": "Bremen", "ja": "ブレーメン", "en": "Bremen"},
-   {"zh": "多特蒙德", "local": "Dortmund", "ja": "ドルトムント", "en": "Dortmund"},
-   {"zh": "德累斯顿", "local": "Dresden", "ja": "ドレスデン", "en": "Dresden"},
-   {"zh": "杜伊斯堡", "local": "Duisburg", "ja": "デュースブルク", "en": "Duisburg"},
-   {"zh": "杜塞尔多夫", "local": "Düsseldorf", "ja": "デュッセルドルフ", "en": "Dusseldorf"},
-   {"zh": "埃尔福特", "local": "Erfurt", "ja": "エアフルト", "en": "Erfurt"},
-   {"zh": "法兰克福", "local": "Frankfurt am Main", "ja": "フランクフルト", "en": "Frankfurt"},
-   {"zh": "汉堡", "local": "Hamburg", "ja": "ハンブルク", "en": "Hamburg"},
-   {"zh": "汉诺威", "local": "Hannover", "ja": "ハノーファー", "en": "Hanover"},
-   {"zh": "卡塞尔", "local": "Kassel", "ja": "カッセル", "en": "Kassel"},
-   {"zh": "基尔", "local": "Kiel", "ja": "キール", "en": "Kiel"},
-   {"zh": "科隆", "local": "Köln", "ja": "ケルン", "en": "Cologne"},
-   {"zh": "莱比锡", "local": "Leipzig", "ja": "ライプツィヒ", "en": "Leipzig"},
-   {"zh": "马格德堡", "local": "Magdeburg", "ja": "マクデブルク", "en": "Magdeburg"},
-   {"zh": "曼海姆", "local": "Mannheim", "ja": "マンハイム", "en": "Mannheim"},
-   {"zh": "慕尼黑", "local": "München", "ja": "ミュンヘン", "en": "Munich"},
-   {"zh": "纽伦堡", "local": "Nürnberg", "ja": "ニュルンベルク", "en": "Nuremberg"},
-   {"zh": "奥斯纳布吕克", "local": "Osnabrück", "ja": "オスナブリュック", "en": "Osnabruck"},
-   {"zh": "罗斯托克", "local": "Rostock", "ja": "ロストック", "en": "Rostock"},
-   {"zh": "斯图加特", "local": "Stuttgart", "ja": "シュトゥットガルト", "en": "Stuttgart"},
-   {"zh": "特拉弗明德", "local": "Travemünde", "ja": "トラフェミュンデ", "en": "Travemunde"}
-  ]},
-  {"id": "gb", "zh": "英国", "local": "United Kingdom", "ja": "イギリス", "en": "United Kingdom", "flag": "🇬🇧", "cities": [
-   {"zh": "伦敦", "local": "London", "ja": "ロンドン", "en": "London"},
-   {"zh": "阿伯丁", "local": "Aberdeen", "ja": "アバディーン", "en": "Aberdeen"},
-   {"zh": "伯明翰", "local": "Birmingham", "ja": "バーミンガム", "en": "Birmingham"},
-   {"zh": "剑桥", "local": "Cambridge", "ja": "ケンブリッジ", "en": "Cambridge"},
-   {"zh": "加的夫", "local": "Cardiff", "ja": "カーディフ", "en": "Cardiff"},
-   {"zh": "卡莱尔", "local": "Carlisle", "ja": "カーライル", "en": "Carlisle"},
-   {"zh": "多佛", "local": "Dover", "ja": "ドーバー", "en": "Dover"},
-   {"zh": "爱丁堡", "local": "Edinburgh", "ja": "エディンバラ", "en": "Edinburgh"},
-   {"zh": "费利克斯托", "local": "Felixstowe", "ja": "フェリクストウ", "en": "Felixstowe"},
-   {"zh": "格拉斯哥", "local": "Glasgow", "ja": "グラスゴー", "en": "Glasgow"},
-   {"zh": "格里姆斯比", "local": "Grimsby", "ja": "グリムズビー", "en": "Grimsby"},
-   {"zh": "利物浦", "local": "Liverpool", "ja": "リバプール", "en": "Liverpool"},
-   {"zh": "曼彻斯特", "local": "Manchester", "ja": "マンチェスター", "en": "Manchester"},
-   {"zh": "纽卡斯尔", "local": "Newcastle-upon-Tyne", "ja": "ニューカッスル", "en": "Newcastle"},
-   {"zh": "普利茅斯", "local": "Plymouth", "ja": "プリマス", "en": "Plymouth"},
-   {"zh": "谢菲尔德", "local": "Sheffield", "ja": "シェフィールド", "en": "Sheffield"},
-   {"zh": "南安普敦", "local": "Southampton", "ja": "サウサンプトン", "en": "Southampton"},
-   {"zh": "斯旺西", "local": "Swansea", "ja": "スウォンジー", "en": "Swansea"}
-  ]},
-  {"id": "fr", "zh": "法国", "local": "France", "ja": "フランス", "en": "France", "flag": "🇫🇷", "cities": [
-   {"zh": "巴黎", "local": "Paris", "ja": "パリ", "en": "Paris"},
-   {"zh": "加来", "local": "Calais", "ja": "カレー", "en": "Calais"},
-   {"zh": "里尔", "local": "Lille", "ja": "リール", "en": "Lille"},
-   {"zh": "兰斯", "local": "Reims", "ja": "ランス", "en": "Reims"},
-   {"zh": "梅斯", "local": "Metz", "ja": "メス", "en": "Metz"},
-   {"zh": "斯特拉斯堡", "local": "Strasbourg", "ja": "ストラスブール", "en": "Strasbourg"},
-   {"zh": "第戎", "local": "Dijon", "ja": "ディジョン", "en": "Dijon"},
-   {"zh": "里昂", "local": "Lyon", "ja": "リヨン", "en": "Lyon"}
-  ]},
-  {"id": "at", "zh": "奥地利", "local": "Österreich", "ja": "オーストリア", "en": "Austria", "flag": "🇦🇹", "cities": [
-   {"zh": "维也纳", "local": "Wien", "ja": "ウィーン", "en": "Vienna"},
-   {"zh": "林茨", "local": "Linz", "ja": "リンツ", "en": "Linz"},
-   {"zh": "萨尔茨堡", "local": "Salzburg", "ja": "ザルツブルク", "en": "Salzburg"},
-   {"zh": "格拉茨", "local": "Graz", "ja": "グラーツ", "en": "Graz"},
-   {"zh": "克拉根福", "local": "Klagenfurt am Wörthersee", "ja": "クラーゲンフルト", "en": "Klagenfurt"},
-   {"zh": "因斯布鲁克", "local": "Innsbruck", "ja": "インスブルック", "en": "Innsbruck"}
-  ]},
-  {"id": "it", "zh": "意大利", "local": "Italia", "ja": "イタリア", "en": "Italy", "flag": "🇮🇹", "cities": [
-   {"zh": "米兰", "local": "Milano", "ja": "ミラノ", "en": "Milan"},
-   {"zh": "都灵", "local": "Torino", "ja": "トリノ", "en": "Turin"},
-   {"zh": "威尼斯", "local": "Venezia", "ja": "ベネチア", "en": "Venice"},
-   {"zh": "维罗纳", "local": "Verona", "ja": "ヴェローナ", "en": "Verona"},
-   {"zh": "博尔扎诺", "local": "Bolzano", "ja": "ボルツァーノ", "en": "Bolzano", "uncertain": true}
-  ]},
-  {"id": "nl", "zh": "荷兰", "local": "Nederland", "ja": "オランダ", "en": "Netherlands", "flag": "🇳🇱", "cities": [
-   {"zh": "阿姆斯特丹", "local": "Amsterdam", "ja": "アムステルダム", "en": "Amsterdam"},
-   {"zh": "鹿特丹", "local": "Rotterdam", "ja": "ロッテルダム", "en": "Rotterdam"},
-   {"zh": "格罗宁根", "local": "Groningen", "ja": "フローニンゲン", "en": "Groningen"},
-   {"zh": "欧罗港", "local": "Europoort", "ja": "ユーロポート", "en": "Europoort", "uncertain": true}
-  ]},
-  {"id": "be", "zh": "比利时", "local": "Belgique / België", "ja": "ベルギー", "en": "Belgium", "flag": "🇧🇪", "cities": [
-   {"zh": "布鲁塞尔", "local": "Brussel / Bruxelles", "ja": "ブリュッセル", "en": "Brussels"},
-   {"zh": "列日", "local": "Liège", "ja": "リエージュ", "en": "Liege"}
-  ]},
-  {"id": "ch", "zh": "瑞士", "local": "Schweiz / Suisse", "ja": "スイス", "en": "Switzerland", "flag": "🇨🇭", "cities": [
-   {"zh": "伯尔尼", "local": "Bern", "ja": "ベルン", "en": "Bern"},
-   {"zh": "苏黎世", "local": "Zürich", "ja": "チューリッヒ", "en": "Zurich"},
-   {"zh": "日内瓦", "local": "Genève", "ja": "ジュネーブ", "en": "Geneva", "uncertain": true}
-  ]},
-  {"id": "pl", "zh": "波兰", "local": "Polska", "ja": "ポーランド", "en": "Poland", "flag": "🇵🇱", "cities": [
-   {"zh": "什切青", "local": "Szczecin", "ja": "シュチェチン", "en": "Szczecin"},
-   {"zh": "波兹南", "local": "Poznań", "ja": "ポズナン", "en": "Poznan"},
-   {"zh": "弗罗茨瓦夫", "local": "Wrocław", "ja": "ヴロツワフ", "en": "Wroclaw"}
-  ]},
-  {"id": "cz", "zh": "捷克", "local": "Česko", "ja": "チェコ", "en": "Czechia", "flag": "🇨🇿", "cities": [
-   {"zh": "布拉格", "local": "Praha", "ja": "プラハ", "en": "Prague"},
-   {"zh": "布尔诺", "local": "Brno", "ja": "ブルノ", "en": "Brno"}
-  ]},
-  {"id": "sk", "zh": "斯洛伐克", "local": "Slovensko", "ja": "スロバキア", "en": "Slovakia", "flag": "🇸🇰", "cities": [
-   {"zh": "布拉迪斯拉发", "local": "Bratislava", "ja": "ブラチスラバ", "en": "Bratislava"}
-  ]},
-  {"id": "lu", "zh": "卢森堡", "local": "Lëtzebuerg", "ja": "ルクセンブルク", "en": "Luxembourg", "flag": "🇱🇺", "cities": [
-   {"zh": "卢森堡", "local": "Luxembourg", "ja": "ルクセンブルク", "en": "Luxembourg"}
-  ]}
+  {
+   "id": "de",
+   "zh": "德国",
+   "local": "Deutschland",
+   "ja": "ドイツ",
+   "en": "Germany",
+   "flag": "🇩🇪",
+   "cities": [
+    {
+     "zh": "柏林",
+     "local": "Berlin",
+     "ja": "ベルリン",
+     "en": "Berlin"
+    },
+    {
+     "zh": "不来梅",
+     "local": "Bremen",
+     "ja": "ブレーメン",
+     "en": "Bremen"
+    },
+    {
+     "zh": "多特蒙德",
+     "local": "Dortmund",
+     "ja": "ドルトムント",
+     "en": "Dortmund"
+    },
+    {
+     "zh": "德累斯顿",
+     "local": "Dresden",
+     "ja": "ドレスデン",
+     "en": "Dresden"
+    },
+    {
+     "zh": "杜伊斯堡",
+     "local": "Duisburg",
+     "ja": "デュースブルク",
+     "en": "Duisburg"
+    },
+    {
+     "zh": "杜塞尔多夫",
+     "local": "Düsseldorf",
+     "ja": "デュッセルドルフ",
+     "en": "Dusseldorf"
+    },
+    {
+     "zh": "埃尔福特",
+     "local": "Erfurt",
+     "ja": "エアフルト",
+     "en": "Erfurt"
+    },
+    {
+     "zh": "法兰克福",
+     "local": "Frankfurt am Main",
+     "ja": "フランクフルト",
+     "en": "Frankfurt"
+    },
+    {
+     "zh": "汉堡",
+     "local": "Hamburg",
+     "ja": "ハンブルク",
+     "en": "Hamburg"
+    },
+    {
+     "zh": "汉诺威",
+     "local": "Hannover",
+     "ja": "ハノーファー",
+     "en": "Hanover"
+    },
+    {
+     "zh": "卡塞尔",
+     "local": "Kassel",
+     "ja": "カッセル",
+     "en": "Kassel"
+    },
+    {
+     "zh": "基尔",
+     "local": "Kiel",
+     "ja": "キール",
+     "en": "Kiel"
+    },
+    {
+     "zh": "科隆",
+     "local": "Köln",
+     "ja": "ケルン",
+     "en": "Cologne"
+    },
+    {
+     "zh": "莱比锡",
+     "local": "Leipzig",
+     "ja": "ライプツィヒ",
+     "en": "Leipzig"
+    },
+    {
+     "zh": "马格德堡",
+     "local": "Magdeburg",
+     "ja": "マクデブルク",
+     "en": "Magdeburg"
+    },
+    {
+     "zh": "曼海姆",
+     "local": "Mannheim",
+     "ja": "マンハイム",
+     "en": "Mannheim"
+    },
+    {
+     "zh": "慕尼黑",
+     "local": "München",
+     "ja": "ミュンヘン",
+     "en": "Munich"
+    },
+    {
+     "zh": "纽伦堡",
+     "local": "Nürnberg",
+     "ja": "ニュルンベルク",
+     "en": "Nuremberg"
+    },
+    {
+     "zh": "奥斯纳布吕克",
+     "local": "Osnabrück",
+     "ja": "オスナブリュック",
+     "en": "Osnabruck"
+    },
+    {
+     "zh": "罗斯托克",
+     "local": "Rostock",
+     "ja": "ロストック",
+     "en": "Rostock"
+    },
+    {
+     "zh": "斯图加特",
+     "local": "Stuttgart",
+     "ja": "シュトゥットガルト",
+     "en": "Stuttgart"
+    },
+    {
+     "zh": "特拉弗明德",
+     "local": "Travemünde",
+     "ja": "トラフェミュンデ",
+     "en": "Travemunde"
+    }
+   ],
+   "line": {
+    "zh": "德意志特快",
+    "ja": "ドイツ特急",
+    "code": "DE",
+    "color": "#d4a000",
+    "terminal": "柏林",
+    "terminal_ja": "ベルリン"
+   }
+  },
+  {
+   "id": "gb",
+   "zh": "英国",
+   "local": "United Kingdom",
+   "ja": "イギリス",
+   "en": "United Kingdom",
+   "flag": "🇬🇧",
+   "cities": [
+    {
+     "zh": "伦敦",
+     "local": "London",
+     "ja": "ロンドン",
+     "en": "London"
+    },
+    {
+     "zh": "阿伯丁",
+     "local": "Aberdeen",
+     "ja": "アバディーン",
+     "en": "Aberdeen"
+    },
+    {
+     "zh": "伯明翰",
+     "local": "Birmingham",
+     "ja": "バーミンガム",
+     "en": "Birmingham"
+    },
+    {
+     "zh": "剑桥",
+     "local": "Cambridge",
+     "ja": "ケンブリッジ",
+     "en": "Cambridge"
+    },
+    {
+     "zh": "加的夫",
+     "local": "Cardiff",
+     "ja": "カーディフ",
+     "en": "Cardiff"
+    },
+    {
+     "zh": "卡莱尔",
+     "local": "Carlisle",
+     "ja": "カーライル",
+     "en": "Carlisle"
+    },
+    {
+     "zh": "多佛",
+     "local": "Dover",
+     "ja": "ドーバー",
+     "en": "Dover"
+    },
+    {
+     "zh": "爱丁堡",
+     "local": "Edinburgh",
+     "ja": "エディンバラ",
+     "en": "Edinburgh"
+    },
+    {
+     "zh": "费利克斯托",
+     "local": "Felixstowe",
+     "ja": "フェリクストウ",
+     "en": "Felixstowe"
+    },
+    {
+     "zh": "格拉斯哥",
+     "local": "Glasgow",
+     "ja": "グラスゴー",
+     "en": "Glasgow"
+    },
+    {
+     "zh": "格里姆斯比",
+     "local": "Grimsby",
+     "ja": "グリムズビー",
+     "en": "Grimsby"
+    },
+    {
+     "zh": "利物浦",
+     "local": "Liverpool",
+     "ja": "リバプール",
+     "en": "Liverpool"
+    },
+    {
+     "zh": "曼彻斯特",
+     "local": "Manchester",
+     "ja": "マンチェスター",
+     "en": "Manchester"
+    },
+    {
+     "zh": "纽卡斯尔",
+     "local": "Newcastle-upon-Tyne",
+     "ja": "ニューカッスル",
+     "en": "Newcastle"
+    },
+    {
+     "zh": "普利茅斯",
+     "local": "Plymouth",
+     "ja": "プリマス",
+     "en": "Plymouth"
+    },
+    {
+     "zh": "谢菲尔德",
+     "local": "Sheffield",
+     "ja": "シェフィールド",
+     "en": "Sheffield"
+    },
+    {
+     "zh": "南安普敦",
+     "local": "Southampton",
+     "ja": "サウサンプトン",
+     "en": "Southampton"
+    },
+    {
+     "zh": "斯旺西",
+     "local": "Swansea",
+     "ja": "スウォンジー",
+     "en": "Swansea"
+    }
+   ],
+   "line": {
+    "zh": "联合王国特快",
+    "ja": "連合王国特急",
+    "code": "GB",
+    "color": "#012169",
+    "terminal": "伦敦",
+    "terminal_ja": "ロンドン"
+   }
+  },
+  {
+   "id": "fr",
+   "zh": "法国",
+   "local": "France",
+   "ja": "フランス",
+   "en": "France",
+   "flag": "🇫🇷",
+   "cities": [
+    {
+     "zh": "巴黎",
+     "local": "Paris",
+     "ja": "パリ",
+     "en": "Paris"
+    },
+    {
+     "zh": "加来",
+     "local": "Calais",
+     "ja": "カレー",
+     "en": "Calais"
+    },
+    {
+     "zh": "里尔",
+     "local": "Lille",
+     "ja": "リール",
+     "en": "Lille"
+    },
+    {
+     "zh": "兰斯",
+     "local": "Reims",
+     "ja": "ランス",
+     "en": "Reims"
+    },
+    {
+     "zh": "梅斯",
+     "local": "Metz",
+     "ja": "メス",
+     "en": "Metz"
+    },
+    {
+     "zh": "斯特拉斯堡",
+     "local": "Strasbourg",
+     "ja": "ストラスブール",
+     "en": "Strasbourg"
+    },
+    {
+     "zh": "第戎",
+     "local": "Dijon",
+     "ja": "ディジョン",
+     "en": "Dijon"
+    },
+    {
+     "zh": "里昂",
+     "local": "Lyon",
+     "ja": "リヨン",
+     "en": "Lyon"
+    }
+   ],
+   "line": {
+    "zh": "法兰西特快",
+    "ja": "フランス特急",
+    "code": "FR",
+    "color": "#0055a4",
+    "terminal": "巴黎",
+    "terminal_ja": "パリ"
+   }
+  },
+  {
+   "id": "at",
+   "zh": "奥地利",
+   "local": "Österreich",
+   "ja": "オーストリア",
+   "en": "Austria",
+   "flag": "🇦🇹",
+   "cities": [
+    {
+     "zh": "维也纳",
+     "local": "Wien",
+     "ja": "ウィーン",
+     "en": "Vienna"
+    },
+    {
+     "zh": "林茨",
+     "local": "Linz",
+     "ja": "リンツ",
+     "en": "Linz"
+    },
+    {
+     "zh": "萨尔茨堡",
+     "local": "Salzburg",
+     "ja": "ザルツブルク",
+     "en": "Salzburg"
+    },
+    {
+     "zh": "格拉茨",
+     "local": "Graz",
+     "ja": "グラーツ",
+     "en": "Graz"
+    },
+    {
+     "zh": "克拉根福",
+     "local": "Klagenfurt am Wörthersee",
+     "ja": "クラーゲンフルト",
+     "en": "Klagenfurt"
+    },
+    {
+     "zh": "因斯布鲁克",
+     "local": "Innsbruck",
+     "ja": "インスブルック",
+     "en": "Innsbruck"
+    }
+   ],
+   "line": {
+    "zh": "奥地利共和国特快",
+    "ja": "オーストリア共和国特急",
+    "code": "AT",
+    "color": "#c8102e",
+    "terminal": "维也纳",
+    "terminal_ja": "ウィーン"
+   }
+  },
+  {
+   "id": "it",
+   "zh": "意大利",
+   "local": "Italia",
+   "ja": "イタリア",
+   "en": "Italy",
+   "flag": "🇮🇹",
+   "cities": [
+    {
+     "zh": "米兰",
+     "local": "Milano",
+     "ja": "ミラノ",
+     "en": "Milan"
+    },
+    {
+     "zh": "都灵",
+     "local": "Torino",
+     "ja": "トリノ",
+     "en": "Turin"
+    },
+    {
+     "zh": "威尼斯",
+     "local": "Venezia",
+     "ja": "ベネチア",
+     "en": "Venice"
+    },
+    {
+     "zh": "维罗纳",
+     "local": "Verona",
+     "ja": "ヴェローナ",
+     "en": "Verona"
+    },
+    {
+     "zh": "博尔扎诺",
+     "local": "Bolzano",
+     "ja": "ボルツァーノ",
+     "en": "Bolzano",
+     "uncertain": true
+    }
+   ],
+   "line": {
+    "zh": "意大利共和国特快",
+    "ja": "イタリア共和国特急",
+    "code": "IT",
+    "color": "#009246",
+    "terminal": "罗马",
+    "terminal_ja": "ローマ"
+   }
+  },
+  {
+   "id": "nl",
+   "zh": "荷兰",
+   "local": "Nederland",
+   "ja": "オランダ",
+   "en": "Netherlands",
+   "flag": "🇳🇱",
+   "cities": [
+    {
+     "zh": "阿姆斯特丹",
+     "local": "Amsterdam",
+     "ja": "アムステルダム",
+     "en": "Amsterdam"
+    },
+    {
+     "zh": "鹿特丹",
+     "local": "Rotterdam",
+     "ja": "ロッテルダム",
+     "en": "Rotterdam"
+    },
+    {
+     "zh": "格罗宁根",
+     "local": "Groningen",
+     "ja": "フローニンゲン",
+     "en": "Groningen"
+    },
+    {
+     "zh": "欧罗港",
+     "local": "Europoort",
+     "ja": "ユーロポート",
+     "en": "Europoort",
+     "uncertain": true
+    }
+   ],
+   "line": {
+    "zh": "荷兰王国特快",
+    "ja": "オランダ王国特急",
+    "code": "NL",
+    "color": "#ff7f00",
+    "terminal": "阿姆斯特丹",
+    "terminal_ja": "アムステルダム"
+   }
+  },
+  {
+   "id": "be",
+   "zh": "比利时",
+   "local": "Belgique / België",
+   "ja": "ベルギー",
+   "en": "Belgium",
+   "flag": "🇧🇪",
+   "cities": [
+    {
+     "zh": "布鲁塞尔",
+     "local": "Brussel / Bruxelles",
+     "ja": "ブリュッセル",
+     "en": "Brussels"
+    },
+    {
+     "zh": "列日",
+     "local": "Liège",
+     "ja": "リエージュ",
+     "en": "Liege"
+    }
+   ],
+   "line": {
+    "zh": "比利时王国特快",
+    "ja": "ベルギー王国特急",
+    "code": "BE",
+    "color": "#e0b000",
+    "terminal": "布鲁塞尔",
+    "terminal_ja": "ブリュッセル"
+   }
+  },
+  {
+   "id": "ch",
+   "zh": "瑞士",
+   "local": "Schweiz / Suisse",
+   "ja": "スイス",
+   "en": "Switzerland",
+   "flag": "🇨🇭",
+   "cities": [
+    {
+     "zh": "伯尔尼",
+     "local": "Bern",
+     "ja": "ベルン",
+     "en": "Bern"
+    },
+    {
+     "zh": "苏黎世",
+     "local": "Zürich",
+     "ja": "チューリッヒ",
+     "en": "Zurich"
+    },
+    {
+     "zh": "日内瓦",
+     "local": "Genève",
+     "ja": "ジュネーブ",
+     "en": "Geneva",
+     "uncertain": true
+    }
+   ],
+   "line": {
+    "zh": "瑞士联邦特快",
+    "ja": "スイス連邦特急",
+    "code": "CH",
+    "color": "#da291c",
+    "terminal": "伯尔尼",
+    "terminal_ja": "ベルン"
+   }
+  },
+  {
+   "id": "pl",
+   "zh": "波兰",
+   "local": "Polska",
+   "ja": "ポーランド",
+   "en": "Poland",
+   "flag": "🇵🇱",
+   "cities": [
+    {
+     "zh": "什切青",
+     "local": "Szczecin",
+     "ja": "シュチェチン",
+     "en": "Szczecin"
+    },
+    {
+     "zh": "波兹南",
+     "local": "Poznań",
+     "ja": "ポズナン",
+     "en": "Poznan"
+    },
+    {
+     "zh": "弗罗茨瓦夫",
+     "local": "Wrocław",
+     "ja": "ヴロツワフ",
+     "en": "Wroclaw"
+    }
+   ],
+   "line": {
+    "zh": "波兰共和国特快",
+    "ja": "ポーランド共和国特急",
+    "code": "PL",
+    "color": "#dc143c",
+    "terminal": "华沙",
+    "terminal_ja": "ワルシャワ"
+   }
+  },
+  {
+   "id": "cz",
+   "zh": "捷克",
+   "local": "Česko",
+   "ja": "チェコ",
+   "en": "Czechia",
+   "flag": "🇨🇿",
+   "cities": [
+    {
+     "zh": "布拉格",
+     "local": "Praha",
+     "ja": "プラハ",
+     "en": "Prague"
+    },
+    {
+     "zh": "布尔诺",
+     "local": "Brno",
+     "ja": "ブルノ",
+     "en": "Brno"
+    }
+   ],
+   "line": {
+    "zh": "捷克共和国特快",
+    "ja": "チェコ共和国特急",
+    "code": "CZ",
+    "color": "#11457e",
+    "terminal": "布拉格",
+    "terminal_ja": "プラハ"
+   }
+  },
+  {
+   "id": "sk",
+   "zh": "斯洛伐克",
+   "local": "Slovensko",
+   "ja": "スロバキア",
+   "en": "Slovakia",
+   "flag": "🇸🇰",
+   "cities": [
+    {
+     "zh": "布拉迪斯拉发",
+     "local": "Bratislava",
+     "ja": "ブラチスラバ",
+     "en": "Bratislava"
+    }
+   ],
+   "line": {
+    "zh": "斯洛伐克共和国特快",
+    "ja": "スロバキア共和国特急",
+    "code": "SK",
+    "color": "#0b4ea2",
+    "terminal": "布拉迪斯拉发",
+    "terminal_ja": "ブラチスラバ"
+   }
+  },
+  {
+   "id": "lu",
+   "zh": "卢森堡",
+   "local": "Lëtzebuerg",
+   "ja": "ルクセンブルク",
+   "en": "Luxembourg",
+   "flag": "🇱🇺",
+   "cities": [
+    {
+     "zh": "卢森堡",
+     "local": "Luxembourg",
+     "ja": "ルクセンブルク",
+     "en": "Luxembourg"
+    }
+   ],
+   "line": {
+    "zh": "卢森堡大公国特快",
+    "ja": "ルクセンブルク大公国特急",
+    "code": "LU",
+    "color": "#00a1de",
+    "terminal": "卢森堡",
+    "terminal_ja": "ルクセンブルク"
+   }
+  }
  ]
 }
