@@ -302,6 +302,12 @@ def edit(): return FileResponse(ROOT/'static'/'index.html')
 @app.get('/tour')
 def tour(): return FileResponse(ROOT/'static'/'ets2.html')
 
+@app.get('/api/notices')
+def notices():
+    """提示音清单（tools/build_notices.py 生成，录音在 data/notices/）"""
+    try: return json.loads((DATA/'notices'/'notices.json').read_text(encoding='utf-8'))
+    except Exception: return {'groups': []}
+
 @app.get('/api/ets2')
 def ets2():
     info = json.loads((ROOT/'static'/'ets2-cities.json').read_text(encoding='utf-8'))

@@ -137,3 +137,15 @@ body[data-mode="mine"] .o-controls-single { grid-template-columns: 1fr 2fr 1fr; 
 .o-single-head h1 { margin: 0; font-size: 22px; font-weight: 800; }
 .o-single-head .o-note { margin-top: 4px; }
 .o-controls-single { grid-template-columns: 1fr; }
+
+/* 提示音面板 */
+.n-group + .n-group { margin-top: 16px; }
+.n-group h3 { margin: 0 0 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.n-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; }
+.n-item { display: grid; gap: 2px; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.n-item b { font-size: 14px; }
+.n-item small { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.n-item:hover { border-color: var(--ink); }
+.n-item.playing { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.n-item.playing small { color: inherit; opacity: .8; }
+.n-panel .o-note { margin-top: 6px; }

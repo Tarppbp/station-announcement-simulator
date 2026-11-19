@@ -73,7 +73,9 @@ function draw() {
  [...$('cityList').children].forEach((li, i) => li.classList.toggle('current', i === S.idx));
 }
 if (channel) channel.onmessage = e => { if (e.data?.hello && data) channel.postMessage(data) };
-function renderAll() { renderBases(); renderCountries(); renderCities(); draw(); save() }
+function renderAll() { renderBases(); renderCountries(); renderCities(); draw(); save(); showNotices() }
+/** 提示音跟着所选原声：510 路配上海公交提示，宇都宫线配 JR 的关门注意、停车中广播和发车音乐 */
+function showNotices() { if (typeof Notices !== 'undefined') Notices.show(S.base === 'bus510' ? ['bus'] : ['door', 'stopping', 'melody']) }
 
 /* ---------- 播放 ---------- */
 function setPlayer(state, title) {

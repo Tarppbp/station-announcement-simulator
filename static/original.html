@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>报站模拟器 · 原声车厢</title>
 <link rel="stylesheet" href="/static/lcd.css?v=4">
-<link rel="stylesheet" href="/static/original.css?v=3">
+<link rel="stylesheet" href="/static/original.css?v=5">
 </head>
 <body>
 <header class="o-top">
@@ -55,6 +55,8 @@
   <p class="o-status" id="status" role="status"></p>
   <p class="o-keys o-jre-only">快捷键：Page Down 发车 / 下一段广播，Page Up 发车音乐，End 暂停 / 继续，Alt+← / Alt+→ 上一站 / 下一站。</p>
 
+  <section class="o-stops-card n-panel" id="noticePanel" hidden aria-label="提示音"></section>
+
   <section class="o-stops-card o-jre-only" aria-labelledby="stopsTitle">
    <h2 id="stopsTitle">停靠站 <span class="o-count" id="stopCount"></span></h2>
    <p class="o-note">点一站直接跳到该站。灰色是这一种别不停的通过站。</p>
@@ -68,5 +70,7 @@
 <script src="/static/lcd.js?v=4"></script>
 <script src="/static/routes.js?v=1"></script>
 <script src="/static/original.js?v=4"></script>
+<script src="/static/notices.js?v=1"></script>
+<script>Notices.mount(document.getElementById('noticePanel'))</script>
 </body>
 </html>
