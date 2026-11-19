@@ -129,7 +129,11 @@ code { font-size: 12px; }
 
 /* 全线 / 单段两种模式 */
 body[data-mode="single"] .o-jre-only { display: none !important; }
-body:not([data-mode="single"]) .o-single-only { display: none !important; }
+body:not([data-mode="single"]):not([data-mode="mine"]) .o-single-only { display: none !important; }
+body[data-mode="mine"] .o-jre-only { display: none !important; }
+body:not([data-mode="mine"]) .o-mine-only { display: none !important; }
+body[data-mode="mine"] .o-controls-single { grid-template-columns: 1fr 2fr 1fr; }
+.o-ai-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 99px; background: #7f3f98; color: #fff; font-size: 12px; font-weight: 750; vertical-align: middle; }
 .o-single-head h1 { margin: 0; font-size: 22px; font-weight: 800; }
 .o-single-head .o-note { margin-top: 4px; }
 .o-controls-single { grid-template-columns: 1fr; }

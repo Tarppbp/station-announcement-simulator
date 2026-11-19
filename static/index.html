@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>报站模拟器 · 改编</title>
-<link rel="stylesheet" href="/static/style.css?v=8">
+<title>报站模拟器 · 自制改编</title>
+<link rel="stylesheet" href="/static/style.css?v=9">
 <link rel="stylesheet" href="/static/lcd.css?v=4">
 </head>
 <body>
 <header class="topbar">
  <div class="topbar-inner">
  <a href="#workstation" class="brand"><span class="brand-icon" aria-hidden="true"></span>报站模拟器</a>
- <nav class="page-tabs" aria-label="页面"><a href="/">原声</a><a href="/edit" aria-current="page">改编</a></nav>
+ <nav class="page-tabs" aria-label="页面"><a href="/">原声车厢</a><a href="/tour" aria-current="page">改编工坊</a></nav>
  <nav class="top-links" aria-label="页面导航"><a href="#otherBroadcasts" id="otherLink" hidden>其他广播</a></nav>
  <div class="player" id="player" data-state="idle">
   <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -22,6 +22,8 @@
  </div>
  </div>
 </header>
+
+<nav class="t-subnav" aria-label="改编工坊"><a href="/tour">欧陆巡游</a><a href="/edit" aria-current="page">自制改编</a></nav>
 
 <section class="base-picker" id="basePicker" hidden aria-labelledby="pickerTitle">
  <div class="card">
@@ -88,6 +90,7 @@
 
    <div class="actions main-actions" id="mainActions">
     <button class="primary big" id="generate" disabled aria-keyshortcuts="Control+Enter"><i class="play-icon" aria-hidden="true"></i><span id="generateLabel">替换并播放</span></button>
+    <button class="secondary" id="generateAll" type="button" hidden title="为这条线路的每一站生成报站，原声页「我的线路」和服务器会用到">生成全部站点</button>
     <button class="ghost" id="playOriginal" disabled>试听原声</button>
    </div>
    <div class="jre-panel" id="jrePanel" hidden>
@@ -226,7 +229,7 @@
 <div class="toast" id="toast" role="status" hidden></div>
 <script src="/static/lcd.js?v=4"></script>
 <script src="/static/routes.js?v=1"></script>
-<script src="/static/app.js?v=11"></script>
+<script src="/static/app.js?v=12"></script>
 <script src="/static/cloud.js?v=4"></script>
 </body>
 </html>

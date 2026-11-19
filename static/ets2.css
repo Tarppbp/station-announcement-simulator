@@ -1,0 +1,15 @@
+/* 欧陆巡游（改编工坊）。基础样式沿用 original.css */
+.t-subnav { max-width: 1400px; margin: 14px auto 0; padding: 0 20px; display: flex; gap: 18px; border-bottom: 1px solid var(--line); }
+.t-subnav a { padding: 8px 2px 10px; color: var(--muted); font-weight: 750; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.t-subnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.t-subnav a:hover { color: var(--ink); }
+.t-gap { margin-top: 18px; }
+.t-bases, .t-countries { display: grid; gap: 4px; }
+.t-base, .t-country { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 7px; border: 1px solid transparent; border-radius: 9px; background: transparent; }
+.t-base:hover, .t-country:hover { background: var(--soft); }
+.t-base.on, .t-country.on { background: var(--soft); border-color: var(--line); }
+.t-flag { font-size: 26px; line-height: 1; text-align: center; }
+.t-country b, .t-base b { font-size: 14.5px; }
+.t-country small, .t-base small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 500; }
+.o-stop .t-warn { position: absolute; right: 8px; bottom: 6px; font-size: 10.5px; color: var(--muted); }
+.o-stop.missing button { opacity: .5; }

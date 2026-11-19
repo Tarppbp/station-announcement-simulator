@@ -2,6 +2,9 @@ import os, sys, re, json, asyncio, uuid, shutil, subprocess, traceback, threadin
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
 from runtime_config import local_path, option
+# 日志里可能有日文、特殊符号；Windows 控制台默认 GBK 编码写不出来会让生成出错，统一用 UTF-8 并替换无法显示的字符
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, 'reconfigure'): _stream.reconfigure(encoding='utf-8', errors='replace')
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / 'data'
@@ -20,7 +23,7 @@ app = FastAPI()
 async def no_stale_pages(request, call_next):
     # 网页文件每次都向服务确认是否有更新，改了 static/ 下的文件刷新就能看到
     response = await call_next(request)
-    if request.url.path in ('/', '/edit') or request.url.path.startswith('/static/'):
+    if request.url.path in ('/', '/edit', '/tour') or request.url.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'no-cache'
     return response
 
@@ -295,6 +298,17 @@ def home(): return FileResponse(ROOT/'static'/'original.html')
 @app.get('/edit')
 def edit(): return FileResponse(ROOT/'static'/'index.html')
 
+# 改编工坊 · 欧陆巡游：欧卡 2 城市的预生成报站（tools/gen_ets2.py 生成），只播放
+@app.get('/tour')
+def tour(): return FileResponse(ROOT/'static'/'ets2.html')
+
+@app.get('/api/ets2')
+def ets2():
+    info = json.loads((ROOT/'static'/'ets2-cities.json').read_text(encoding='utf-8'))
+    try: audio = json.loads((DATA/'ets2'/'manifest.json').read_text(encoding='utf-8'))
+    except Exception: audio = {}
+    return {**info, 'audio': audio, 'custom': True}
+
 @app.get('/full')
 def full(): return RedirectResponse('/edit')
 
@@ -389,6 +403,37 @@ def options():
         'melodies': [name for name in ('JRE-IKST-025-01.mp3', 'JRE-IKST-025-02.mp3', 'JR-SH1-1_old.mp3') if (sounds/name).is_file()],
         'notices': [name for name in ('bus-turn.mp3', 'bus-seat.mp3', 'bus-safety.mp3') if (sounds/name).is_file()],
     }
+
+
+@app.get('/api/mine')
+def mine():
+    """「我的线路」给原声页播放：每条线路的设置、站点读音，以及每站已生成好的录音（没生成或内容已改的站没有 url）。"""
+    try: state = json.loads(STATE.read_text(encoding='utf-8'))
+    except Exception: return {'presets': []}
+    out = []
+    for preset in state.get('presets') or []:
+        prof = (state.get('profiles') or {}).get(preset.get('key')) or {}
+        base = preset.get('base') or ''
+        city = '东京' if not base.startswith(('bus', 'cr', 'p_')) else '上海'
+        recs = prof.get('recordings') or {}
+        stations = []
+        for i, st in enumerate(prof.get('stations') or []):
+            name = (st.get('name') or '').strip()
+            if not name: continue
+            try: auto = _readings.readings(name, city)
+            except Exception: auto = {}
+            item = {'name': name, 'jname': st.get('jname') or auto.get('jname') or name, 'ja': st.get('ja') or auto.get('ja', ''),
+                    'en': st.get('en') or auto.get('en', ''), 'no': st.get('no', '')}
+            rec = recs.get(str(i)) or {}
+            url = rec.get('url') or ''
+            fresh = rec.get('station') == st.get('name') and ('line' not in prof or rec.get('line', '') == (prof.get('line') or '').strip())
+            m = re.fullmatch(r'/data/([0-9a-f]{32})/((?:saved-[0-9a-f]{24}|result-[0-9a-f]{32})\.wav)', url)
+            if fresh and m and (DATA/m[1]/m[2]).is_file(): item['url'] = url
+            stations.append(item)
+        out.append({'key': preset.get('key'), 'name': preset.get('name'), 'base': base, 'city': city, 'stations': stations,
+                    'line': (prof.get('boardLine') or prof.get('line') or '').strip(), 'code': prof.get('code') or '', 'color': prof.get('color') or '',
+                    'direction': prof.get('direction') or '', 'type': (state.get('services') or {}).get('type1') or ''})
+    return {'presets': out}
 
 
 @app.get('/api/jre/routes')

@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>报站模拟器 · 原声</title>
+<title>报站模拟器 · 原声车厢</title>
 <link rel="stylesheet" href="/static/lcd.css?v=4">
-<link rel="stylesheet" href="/static/original.css?v=2">
+<link rel="stylesheet" href="/static/original.css?v=3">
 </head>
 <body>
 <header class="o-top">
  <div class="o-top-inner">
   <span class="o-brand"><span class="o-brand-icon" aria-hidden="true"></span>报站模拟器</span>
-  <nav class="o-tabs" aria-label="页面"><a href="/" aria-current="page">原声</a><a href="/edit">改编</a></nav>
+  <nav class="o-tabs" aria-label="页面"><a href="/" aria-current="page">原声车厢</a><a href="/tour">改编工坊</a></nav>
   <div class="o-player" id="player" data-state="idle">
    <span class="o-eq" aria-hidden="true"><i></i><i></i><i></i></span>
    <span class="o-now" id="nowPlaying" aria-live="polite">未在播放</span>
@@ -26,7 +26,7 @@
  <aside class="o-lines" aria-labelledby="linesTitle">
   <h2 id="linesTitle">线路</h2>
   <div class="o-folders" id="lineList"></div>
-  <p class="o-note">只播放真实录音，不做修改。想改线路名、站名，请到「改编」页。JR 录音由铁道爱好者录制，版权归 JR 东日本，仅供个人使用。</p>
+  <p class="o-note">只播放真实录音，不做修改。想听改过站名的版本，请到「改编工坊」。JR 录音由铁道爱好者录制，版权归 JR 东日本，仅供个人使用。</p>
  </aside>
 
  <section class="o-stage" aria-label="报站">
@@ -35,7 +35,9 @@
   <div id="lcdFrame"></div>
 
   <div class="o-controls o-single-only o-controls-single">
-   <button type="button" class="o-primary" id="playOriginal"><i class="o-play" aria-hidden="true"></i><span>播放原声</span></button>
+   <button type="button" class="o-nav o-mine-only" id="minePrev" title="上一站（Alt+←）"><span aria-hidden="true">‹</span> 上一站</button>
+   <button type="button" class="o-primary" id="playOriginal"><i class="o-play" aria-hidden="true"></i><span id="playOriginalLabel">播放原声</span></button>
+   <button type="button" class="o-nav o-mine-only" id="mineNext" title="下一站（Alt+→）">下一站 <span aria-hidden="true">›</span></button>
   </div>
   <div class="o-controls o-jre-only">
    <button type="button" class="o-nav" id="prevStation" title="上一站（Alt+←）"><span aria-hidden="true">‹</span> 上一站</button>
@@ -65,6 +67,6 @@
 <div class="o-toast" id="toast" role="status" hidden></div>
 <script src="/static/lcd.js?v=4"></script>
 <script src="/static/routes.js?v=1"></script>
-<script src="/static/original.js?v=2"></script>
+<script src="/static/original.js?v=4"></script>
 </body>
 </html>

@@ -273,7 +273,7 @@ function loadRoute() {
  if (jre) { J.state = 'at'; J.step = 0; jreUI() }
  $('playOriginal').disabled = !current;
  $('sourceStatus').textContent = jre ? '' : !current ? '这条线路没有本地录音，可在右侧导入原声。' : !current.markers?.length ? '可试听原声。完成站名识别后可在原声中替换。' : '';
- $('presetName').value = r.preset ? r.preset.name : ''; $('deletePreset').hidden = !r.preset; $('resetRoute').hidden = !!r.preset; $('importDelete').hidden = !r.imported;
+ $('presetName').value = r.preset ? r.preset.name : ''; $('deletePreset').hidden = !r.preset; $('generateAll').hidden = !r.preset; $('resetRoute').hidden = !!r.preset; $('importDelete').hidden = !r.imported;
  markSwatch(); $('extraFold').hidden = !!r.jre || !(has('next2') || has('transfer') || r.numbered); fillTypes();
  renderStations(); showStation(); renderEditable(); invalidate(); refreshReadings();
 }
@@ -515,7 +515,7 @@ function buildRequest() {
  }
  return {url: `/api/generate/${r.pid}`, body: {fields, custom: (p.customEdits || []).filter(x => x.original.trim() || x.replacement.trim())}};
 }
-async function generate(retake) {
+async function generate(retake, silent = false) {
  if ($('generate').disabled) return;
  if (!curRow()?.name?.trim()) { toast('请先输入站名'); $('stationName').focus(); return }
  const pr = profile(), my = ++rev, isCurrent = () => my === rev;
@@ -535,15 +535,35 @@ async function generate(retake) {
   resultUrl = s.url; lastRequest = req;
   $('resultActions').hidden = false;
   $('download').href = s.url; $('download').hidden = false; $('playResult').disabled = false; $('retake').hidden = false;
-  if (sel().preset) { profile().lastRecording = {url: s.url.split('?')[0], station: curRow().name}; persist(); renderRoutes() }
+  if (sel().preset) {
+   const rec = {url: s.url.split('?')[0], station: curRow().name, line: $('lineName').value.trim()};
+   profile().lastRecording = {url: rec.url, station: rec.station};
+   (profile().recordings ||= {})[profile().idx] = rec;  // 每站的成品录音，原声页「我的线路」和服务器同步用
+   persist(); renderRoutes();
+  }
   $('progressBar').parentElement.hidden = true;
   $('progressBox').hidden = !s.warn;
   $('progress').textContent = s.warn ? s.message : '';
-  play(s.url, `${sel().name} · ${curRow().name}`);
+  if (!silent) play(s.url, `${sel().name} · ${curRow().name}`);
  } catch (e) { if (isCurrent()) { $('progressBar').parentElement.hidden = true; $('progress').textContent = e.message } }
  finally { if (isCurrent()) setGenerating(false) }
 }
 $('generate').onclick = () => generate(false);
+/** 我的线路：把每一站都生成一遍（已生成过的直接用保存的结果），供原声页和服务器播放 */
+$('generateAll').onclick = async () => {
+ const key = S.selected, p = profile(), total = p.stations.length, start = p.idx;
+ $('generateAll').disabled = true;
+ try {
+  for (let i = 0; i < total; i++) {
+   if (S.selected !== key) return;
+   if (!p.stations[i].name.trim()) continue;
+   selectRow(i); $('generateAll').textContent = `正在生成 ${i + 1} / ${total}…`;
+   await generate(false, true);
+   if (!p.recordings?.[i] || p.recordings[i].station !== p.stations[i].name) { toast(`「${p.stations[i].name}」没有生成成功`); return }
+  }
+  toast(`已生成全部 ${total} 站`);
+ } finally { $('generateAll').disabled = false; $('generateAll').textContent = '生成全部站点'; if (S.selected === key) selectRow(Math.min(start, p.stations.length - 1)) }
+};
 $('retake').onclick = () => generate(true);
 $('playResult').onclick = () => resultUrl && play(resultUrl, `${sel().name} · ${curRow().name}`);
 $('playOriginal').onclick = () => current && play(`/data/${current.id}/original.wav`, '原声 · ' + current.name);
@@ -688,7 +708,7 @@ $('savePreset').onclick = () => {
  const r = sel();
  if (r.preset && r.preset.name === name) { toast('已保存'); return }  // 我的线路里的改动本来就会自动保存
  const key = 'u_' + Date.now().toString(36);
- const saved = structuredClone(profile()); delete saved.lastRecording;
+ const saved = structuredClone(profile()); delete saved.lastRecording; delete saved.recordings;
  if (resultUrl) saved.lastRecording = {url: resultUrl.split('?')[0], station: curRow().name};
  S.presets.push({key, name, base: r.preset ? r.preset.base : r.key, snapshot: structuredClone(saved)}); S.profiles[key] = saved;
  choose(key); toast(`已保存为「${name}」`);

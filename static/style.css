@@ -406,3 +406,9 @@ details > summary:hover { color: var(--accent); }
 .base-name .base-fields { color: var(--ink); font-weight: 650; }
 .change-base { margin-left: auto; }
 @media (max-width: 720px) { .page-tabs { margin-left: auto; } .page-tabs a { padding: 4px 10px; } }
+
+/* 改编工坊的子页面切换（欧陆巡游 / 自制改编） */
+.t-subnav { max-width: 1400px; margin: 14px auto 0; padding: 0 20px; display: flex; gap: 18px; border-bottom: 1px solid var(--line); }
+.t-subnav a { padding: 8px 2px 10px; color: var(--muted); font-weight: 750; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.t-subnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.t-subnav a:hover { color: var(--ink); }
