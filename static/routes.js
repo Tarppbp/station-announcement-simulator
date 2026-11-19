@@ -18,7 +18,7 @@ const CR = (key, pid, name, code, station, english, stationLabel, sub, note, ser
 const routes = [
  {key: 'bus510', city: '上海', kind: '公交', name: '公交 510 路', code: '510', color: '#e77736', pid: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', en: true,
   line: '510路', terminal: '武威东路真金路', direction: '武威东路真金路方向', sub: '普通话 · 沪语 · 英语',
-  stations: [row('公平路东长治路', '', 'Gongping Road at Dongchangzhi Road'), row('巴黎', 'パリ', 'Paris')],
+  stations: [row('公平路东长治路', '', 'Gongping Road at Dongchangzhi Road'), row('武威东路真金路', '', 'Wuweidong Road at Zhenjin Road')],
   note: '普通话、沪语、英语原声。线路名、终点站、下一站会用语音生成替换，其余保留原声；沪语里的新名称暂用普通话。'},
  CR('crG3106', 'e521e8a6e66d880504ea0b20bae44ab8', '国铁 G3106 · 南京南', 'G3106',
   '南京南', 'Nanjing Nan', '即将到站', '到站预告 · 中英',
